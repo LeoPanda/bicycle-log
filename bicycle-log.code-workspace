@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "python.languageServer": "Jedi",
+    "workbench.editorAssociations": {
+      "*.md": "vscode.markdown.preview.editor",
+      "*.eml": "emlviewer.eml",
+    },
+  },
+}
