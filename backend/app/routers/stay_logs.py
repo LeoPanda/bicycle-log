@@ -50,6 +50,20 @@ def get_stay_log(stay_id: int, session: Session = Depends(get_session)):
     s_dict["images"] = images
     return s_dict
 
+from pydantic import BaseModel
+from app.models.category import PlaceCategory
+
+class UpdateStayLogPlaceSchema(BaseModel):
+    place_id: str
+    name: str
+    address: Optional[str] = None
+    latitude: float
+    longitude: float
+    category_name: Optional[str] = None
+
+class StayLogImageUpdateSchema(BaseModel):
+    comment: Optional[str] = None
+
 @router.put("/{stay_id}", response_model=StayLog)
 def update_stay_log(stay_id: int, stay_in: StayLogUpdate, session: Session = Depends(get_session)):
     stay = session.get(StayLog, stay_id)
@@ -66,6 +80,65 @@ def update_stay_log(stay_id: int, stay_in: StayLogUpdate, session: Session = Dep
     session.refresh(stay)
     return stay
 
+@router.put("/{stay_id}/place")
+def update_stay_log_place(
+    stay_id: int,
+    place_in: UpdateStayLogPlaceSchema,
+    session: Session = Depends(get_session)
+):
+    stay = session.get(StayLog, stay_id)
+    if not stay:
+        raise HTTPException(status_code=404, detail="Stay log not found")
+    
+    # 1. Match category
+    cat_name = place_in.category_name or "未分類"
+    category = session.exec(select(PlaceCategory).where(PlaceCategory.name == cat_name)).first()
+    if not category:
+        category = session.exec(select(PlaceCategory).where(PlaceCategory.name == "未分類")).first()
+
+    # 2. Get or Create/Update Place
+    place = session.get(Place, place_in.place_id)
+    if not place:
+        place = Place(
+            id=place_in.place_id,
+            name=place_in.name,
+            address=place_in.address,
+            latitude=place_in.latitude,
+            longitude=place_in.longitude,
+            category_id=category.id if category else None
+        )
+        session.add(place)
+    else:
+        place.name = place_in.name
+        place.address = place_in.address
+        place.latitude = place_in.latitude
+        place.longitude = place_in.longitude
+        if category:
+            place.category_id = category.id
+        place.updated_at = datetime.now()
+        session.add(place)
+    
+    session.commit()
+    session.refresh(place)
+
+    # 3. Update StayLog place_id
+    stay.place_id = place.id
+    stay.updated_at = datetime.now()
+    session.add(stay)
+    session.commit()
+    session.refresh(stay)
+
+    images = session.exec(select(StayLogImage).where(StayLogImage.stay_log_id == stay_id).order_by(StayLogImage.display_order.asc())).all()
+    s_dict = stay.model_dump()
+    s_dict["place_name"] = place.name
+    s_dict["place_address"] = place.address or ""
+    s_dict["latitude"] = place.latitude
+    s_dict["longitude"] = place.longitude
+    s_dict["place"] = place
+    s_dict["images"] = images
+    return s_dict
+
+
 @router.post("/{stay_id}/images")
 async def add_stay_log_image(
     stay_id: int,
@@ -81,7 +154,13 @@ async def add_stay_log_image(
     final_url = ""
     if file:
         # File upload: Optimize to 700x700 center crop WebP 80%
-        final_url = optimize_and_save_image(file.file, file.filename or "image.jpg")
+        try:
+            content = await file.read()
+            final_url = optimize_and_save_image(content, file.filename or "image.jpg")
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"画像処理エラー: {str(e)}")
     elif image_url:
         # Direct Web URL link
         final_url = image_url
@@ -102,6 +181,22 @@ async def add_stay_log_image(
     session.commit()
     session.refresh(image_rec)
     return image_rec
+
+@router.put("/images/{image_id}", response_model=StayLogImage)
+def update_stay_log_image(
+    image_id: int,
+    image_in: StayLogImageUpdateSchema,
+    session: Session = Depends(get_session)
+):
+    img = session.get(StayLogImage, image_id)
+    if not img:
+        raise HTTPException(status_code=404, detail="Image not found")
+    img.comment = image_in.comment
+    img.updated_at = datetime.now()
+    session.add(img)
+    session.commit()
+    session.refresh(img)
+    return img
 
 @router.delete("/images/{image_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_stay_log_image(image_id: int, session: Session = Depends(get_session)):

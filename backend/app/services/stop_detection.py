@@ -18,7 +18,7 @@ def detect_stops(
     latlng_stream: List[List[float]],
     time_stream: List[int],
     start_date: datetime,
-    min_stay_seconds: int = 1800,
+    min_stay_seconds: int = 900,
     radius_meters: float = 50.0
 ) -> List[Dict[str, Any]]:
     """

@@ -9,6 +9,7 @@ class BikeBase(SQLModel):
     model: Optional[str] = Field(default=None)
     registered_at: Optional[datetime] = Field(default=None)
     notes: Optional[str] = Field(default=None)
+    strava_gear_id: Optional[str] = Field(default=None, index=True)
 
 class Bike(BikeBase, table=True):
     __tablename__ = "bikes"
@@ -29,3 +30,4 @@ class BikeUpdate(SQLModel):
     model: Optional[str] = None
     registered_at: Optional[datetime] = None
     notes: Optional[str] = None
+    strava_gear_id: Optional[str] = None

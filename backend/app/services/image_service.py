@@ -3,14 +3,20 @@ import uuid
 import io
 import logging
 from PIL import Image
-from typing import BinaryIO
+from typing import BinaryIO, Union
 from app.core.config import settings
 
 logger = logging.getLogger("app.services.image")
 
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except ImportError:
+    pass
+
 UPLOAD_DIR = os.path.join(os.path.dirname(settings.DATABASE_URL.replace("sqlite:///", "")), "uploads")
 
-def optimize_and_save_image(file_obj: BinaryIO, filename: str) -> str:
+def optimize_and_save_image(file_obj_or_bytes: Union[BinaryIO, bytes], filename: str) -> str:
     """
     Center crop to 700x700 square, compress to WebP format (quality 80%),
     and save file to storage (local fallback or GCS).
@@ -18,8 +24,24 @@ def optimize_and_save_image(file_obj: BinaryIO, filename: str) -> str:
     """
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     
+    if isinstance(file_obj_or_bytes, bytes):
+        if not file_obj_or_bytes:
+            raise ValueError("アップロードされたファイルが空です。")
+        file_stream = io.BytesIO(file_obj_or_bytes)
+    else:
+        file_stream = file_obj_or_bytes
+        if hasattr(file_stream, "seek"):
+            try:
+                file_stream.seek(0)
+            except Exception:
+                pass
+
     # Open image with Pillow
-    img = Image.open(file_obj)
+    try:
+        img = Image.open(file_stream)
+    except Exception as e:
+        logger.warning(f"Failed to identify image file '{filename}': {e}")
+        raise ValueError("有効な画像ファイル（JPEG, PNG, WebP, HEIC等）を指定してください。")
     
     # Auto-orient if EXIF orientation exists
     try:

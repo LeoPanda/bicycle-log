@@ -6,6 +6,7 @@ class PlaceCategoryBase(SQLModel):
     name: str = Field(unique=True, index=True, nullable=False)
     description: Optional[str] = Field(default=None)
     icon: Optional[str] = Field(default=None)
+    sort_order: int = Field(default=100, index=True)
 
 class PlaceCategory(PlaceCategoryBase, table=True):
     __tablename__ = "place_categories"
@@ -23,3 +24,4 @@ class PlaceCategoryUpdate(SQLModel):
     name: Optional[str] = None
     description: Optional[str] = None
     icon: Optional[str] = None
+    sort_order: Optional[int] = None

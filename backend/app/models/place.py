@@ -8,6 +8,7 @@ class PlaceBase(SQLModel):
     address: Optional[str] = Field(default=None)
     latitude: float = Field(nullable=False)
     longitude: float = Field(nullable=False)
+    comment: Optional[str] = Field(default=None)
 
 class Place(PlaceBase, table=True):
     __tablename__ = "places"
@@ -28,3 +29,4 @@ class PlaceUpdate(SQLModel):
     address: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    comment: Optional[str] = None

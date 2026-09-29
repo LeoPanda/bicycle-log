@@ -56,5 +56,57 @@ export const api = {
       throw new ApiError(data?.detail || 'Image upload failed', response.status, data?.log_id);
     }
     return data;
+  },
+
+  searchNearbyPlaces: (lat: number, lng: number, radius = 2000, query?: string) => {
+    const params = new URLSearchParams({
+      lat: String(lat),
+      lng: String(lng),
+      radius: String(radius),
+      ...(query ? { q: query } : {})
+    });
+    return request<any[]>(`/places/search-nearby?${params.toString()}`);
+  },
+
+  updateStayLogPlace: (
+    stayId: number,
+    placeData: {
+      place_id: string;
+      name: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      category_name?: string;
+    }
+  ) => {
+    return request<any>(`/stay-logs/${stayId}/place`, {
+      method: 'PUT',
+      body: JSON.stringify(placeData)
+    });
+  },
+
+  overwritePlace: (
+    placeId: string,
+    placeData: {
+      new_place_id: string;
+      name: string;
+      address?: string;
+      latitude: number;
+      longitude: number;
+      category_name?: string;
+    }
+  ) => {
+    return request<any>(`/places/${encodeURIComponent(placeId)}/overwrite`, {
+      method: 'PUT',
+      body: JSON.stringify(placeData)
+    });
+  },
+
+  updateImageComment: (imageId: number, comment: string) => {
+    return request<any>(`/stay-logs/images/${imageId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ comment })
+    });
   }
 };
+

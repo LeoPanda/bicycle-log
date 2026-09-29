@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/place-categories", tags=["place-categories"])
 
 @router.get("", response_model=List[PlaceCategory])
 def list_categories(session: Session = Depends(get_session)):
-    return session.exec(select(PlaceCategory).order_by(PlaceCategory.id.asc())).all()
+    return session.exec(select(PlaceCategory).order_by(PlaceCategory.sort_order.asc(), PlaceCategory.id.asc())).all()
 
 @router.post("", response_model=PlaceCategory, status_code=status.HTTP_201_CREATED)
 def create_category(cat_in: PlaceCategoryCreate, session: Session = Depends(get_session)):

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     TZ: str = "Asia/Tokyo"
     LOG_LEVEL: str = "DEBUG"
     DATABASE_URL: str = "sqlite:///./data/app.db"
+    SQL_ECHO: bool = False
     INTERNAL_AI_TOKEN: str = "ai_agent_secret_secure_token_2026"
     
     # External API Keys & Credentials

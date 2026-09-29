@@ -1,0 +1,13 @@
+# .gcloudignore to allow sending data/app.db to Cloud Build
+.git
+.gitignore
+
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.venv/
+__pycache__/
+*.pyc
+
+# Explicitly include data/app.db
+!data/app.db

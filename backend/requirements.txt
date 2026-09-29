@@ -4,5 +4,6 @@ sqlmodel>=0.0.8
 pydantic-settings>=2.0.0
 httpx>=0.24.0
 pillow>=9.5.0
+pillow-heif>=0.10.0
 google-cloud-storage>=2.10.0
 python-multipart>=0.0.6

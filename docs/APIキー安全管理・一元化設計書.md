@@ -22,8 +22,15 @@ API キーや認証鍵が記載された `.env` などの構成ファイル、�
 
 ## **2. 環境に応じた環境変数注入仕様およびバケット命名規則**
 
-- **開発環境 (ローカルDocker)**: `docker-compose.yml` で `backend/.env` から環境変数 (`GOOGLE_APPLICATION_CREDENTIALS`, `GCS_BUCKET_NAME_IMAGES`, `GCS_LITESTREAM_BACKUP_BUCKET`, `INTERNAL_AI_TOKEN`, `DATABASE_URL` 等) をコンテナ内へマウントして注入する。
-- **本番環境 (Google Cloud / Cloud Run)**: GCP `Secret Manager` 上にシークレット（サービスアカウントキーやトークン等）を安全に登録し、Cloud Run のサービス起動時に動的に環境変数として単一統合コンテナにバインドする。
+- **開発環境 (ローカルDocker)**: `docker-compose.yml` で `backend/.env` から環境変数 (`GOOGLE_APPLICATION_CREDENTIALS`, `GCS_BUCKET_NAME_IMAGES`, `GCS_LITESTREAM_BACKUP_BUCKET`, `INTERNAL_AI_TOKEN`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN`, `GOOGLE_PLACES_API_KEY`, `DATABASE_URL` 等) をコンテナ内へマウントして注入する。
+- **本番環境 (Google Cloud / Cloud Run)**: GCP `Secret Manager` 上にシークレット（内部AI認証トークン `INTERNAL_AI_TOKEN` や Strava 認証資格情報 `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REFRESH_TOKEN`, Google Places API キー `GOOGLE_PLACES_API_KEY` 等）を安全に登録し、Cloud Run のサービス起動時に動的に環境変数として単一統合コンテナにバインドする。
 - **Litestream バックアップ用 GCS バケット命名規約**: 同一 GCP プロジェクト上で複数のサービスを稼働させる運用環境において、バケット名の衝突を防止するため、Litestream のバックアップ用 GCS バケット名には Docker コンテナ名を含めてユニーク化を図る（例: `<project-id>-litestream-<container-name>`）。
 
 ---
+
+## **3. 改定履歴**
+
+| バージョン | 改定日 | 改訂依頼番号 | 改定内容 |
+| :--- | :--- | :--- | :--- |
+| 1.1 | 2026-09-02 | 1.1.002 | `GOOGLE_PLACES_API_KEY` を管理対象シークレット仕様および本番 Secret Manager 注入仕様に追加 |
+

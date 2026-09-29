@@ -15,6 +15,7 @@ export interface PlaceCategory {
   name: string;
   description?: string;
   icon?: string;
+  sort_order?: number;
   created_at: string;
   updated_at: string;
 }
@@ -28,7 +29,27 @@ export interface Place {
   address?: string;
   latitude: number;
   longitude: number;
+  comment?: string;
   visit_count?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RouteMaster {
+  id: number;
+  name: string;
+  summary_polyline?: string;
+  activity_count: number;
+  activities?: Array<{
+    id: number;
+    name: string;
+    start_date: string;
+    distance_km: number;
+    moving_time?: number;
+    total_elevation_gain?: number;
+    summary_polyline?: string;
+    strava_url?: string;
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +59,7 @@ export interface Activity {
   name: string;
   bike_id?: number;
   bike_name?: string;
+  route_id?: number;
   start_date: string;
   distance: number;
   moving_time?: number;
@@ -65,7 +87,10 @@ export interface StayLog {
   place_id: string;
   place_name?: string;
   place_address?: string;
+  category_name?: string;
+  category_icon?: string;
   activity_name?: string;
+  activity_start_date?: string;
   arrived_at: string;
   left_at: string;
   stay_duration_seconds: number;
@@ -104,6 +129,11 @@ export interface DashboardSummary {
     category_name: string;
     visit_count: number;
     last_visited_at: string;
+  }>;
+  route_ranking?: Array<{
+    route_id: number;
+    name: string;
+    activity_count: number;
   }>;
 }
 

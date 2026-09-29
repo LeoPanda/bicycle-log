@@ -1,33 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Filter, RefreshCw, Plus, Eye, Pencil, Trash2, MapPin, Activity as ActivityIcon } from 'lucide-react';
+import { Search, Filter, RefreshCw, Plus, Eye, Pencil, Trash2, MapPin, Activity as ActivityIcon, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { api } from '../services/api';
 import { Activity, Place, PlaceCategory, Bike } from '../types';
 
 export const ItemsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') === 'places' ? 'places' : 'activities';
 
-  const [search, setSearch] = useState('');
-  const [categoryId, setCategoryId] = useState<string>('');
-  const [bikeId, setBikeId] = useState<string>('');
-  
+  const activeTab = searchParams.get('tab') === 'places' ? 'places' : 'activities';
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const sortBy = searchParams.get('sort_by') || 'start_date';
+  const sortOrder = searchParams.get('sort_order') || 'desc';
+  const search = searchParams.get('q') || '';
+  const categoryId = searchParams.get('category_id') || '';
+  const bikeId = searchParams.get('bike_id') || '';
+
+  const [searchInput, setSearchInput] = useState(search);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [categories, setCategories] = useState<PlaceCategory[]>([]);
   const [bikes, setBikes] = useState<Bike[]>([]);
 
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
     // Load categories & bikes for filters
     api.get<PlaceCategory[]>('/place-categories').then(setCategories).catch(console.error);
     api.get<Bike[]>('/bikes').then(setBikes).catch(console.error);
   }, []);
+
+  const updateParams = (newParamsObj: Record<string, string | number | undefined | null>) => {
+    const newParams = new URLSearchParams(searchParams);
+    Object.entries(newParamsObj).forEach(([key, val]) => {
+      if (val === undefined || val === null || val === '') {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, String(val));
+      }
+    });
+    setSearchParams(newParams, { replace: true });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -36,6 +55,8 @@ export const ItemsPage: React.FC = () => {
         const query = new URLSearchParams({
           page: String(page),
           per_page: '10',
+          sort_by: sortBy,
+          sort_order: sortOrder,
           ...(search ? { q: search } : {}),
           ...(bikeId ? { bike_id: bikeId } : {})
         });
@@ -62,12 +83,20 @@ export const ItemsPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab, page, categoryId, bikeId]);
+  }, [activeTab, page, sortBy, sortOrder, search, categoryId, bikeId]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1);
-    fetchData();
+    updateParams({ q: searchInput, page: 1 });
+  };
+
+  const handleSort = (colKey: string) => {
+    if (sortBy === colKey) {
+      const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      updateParams({ sort_by: colKey, sort_order: newOrder, page: 1 });
+    } else {
+      updateParams({ sort_by: colKey, sort_order: 'desc', page: 1 });
+    }
   };
 
   const handleDeleteActivity = async (id: number) => {
@@ -90,6 +119,27 @@ export const ItemsPage: React.FC = () => {
     }
   };
 
+  const renderSortableHeader = (label: string, colKey: string) => {
+    const isActive = sortBy === colKey;
+    return (
+      <th
+        onClick={() => handleSort(colKey)}
+        className="px-6 py-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition select-none group"
+      >
+        <div className="flex items-center gap-1.5">
+          <span>{label}</span>
+          <span className={`transition ${isActive ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-400 group-hover:text-slate-600'}`}>
+            {isActive ? (
+              sortOrder === 'asc' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />
+            ) : (
+              <ArrowUpDown className="w-3.5 h-3.5 opacity-50" />
+            )}
+          </span>
+        </div>
+      </th>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Tabs */}
@@ -97,8 +147,7 @@ export const ItemsPage: React.FC = () => {
         <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
           <button
             onClick={() => {
-              setSearchParams({ tab: 'activities' });
-              setPage(1);
+              updateParams({ tab: 'activities', page: 1 });
             }}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-sm transition ${
               activeTab === 'activities'
@@ -111,8 +160,7 @@ export const ItemsPage: React.FC = () => {
           </button>
           <button
             onClick={() => {
-              setSearchParams({ tab: 'places' });
-              setPage(1);
+              updateParams({ tab: 'places', page: 1 });
             }}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-sm transition ${
               activeTab === 'places'
@@ -144,8 +192,8 @@ export const ItemsPage: React.FC = () => {
           <input
             type="text"
             placeholder="名称・住所・キーワードで絞り込み検索..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -153,7 +201,7 @@ export const ItemsPage: React.FC = () => {
         {activeTab === 'places' && (
           <select
             value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
+            onChange={(e) => updateParams({ category_id: e.target.value, page: 1 })}
             className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">すべてのカテゴリ</option>
@@ -168,7 +216,7 @@ export const ItemsPage: React.FC = () => {
         {activeTab === 'activities' && (
           <select
             value={bikeId}
-            onChange={(e) => setBikeId(e.target.value)}
+            onChange={(e) => updateParams({ bike_id: e.target.value, page: 1 })}
             className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">すべての使用自転車</option>
@@ -204,10 +252,10 @@ export const ItemsPage: React.FC = () => {
                   <tr>
                     <th className="px-6 py-4">アクティビティ名</th>
                     <th className="px-6 py-4">使用自転車</th>
-                    <th className="px-6 py-4">走行距離</th>
-                    <th className="px-6 py-4">獲得標高</th>
-                    <th className="px-6 py-4">滞在スポット</th>
-                    <th className="px-6 py-4">開始日時</th>
+                    {renderSortableHeader('走行距離', 'distance')}
+                    {renderSortableHeader('獲得標高', 'total_elevation_gain')}
+                    {renderSortableHeader('滞在スポット', 'stay_count')}
+                    {renderSortableHeader('開始日時', 'start_date')}
                     <th className="px-6 py-4 text-right">操作</th>
                   </tr>
                 </thead>
@@ -301,14 +349,14 @@ export const ItemsPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <button
                 disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
+                onClick={() => updateParams({ page: page - 1 })}
                 className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium disabled:opacity-40"
               >
                 前へ
               </button>
               <button
                 disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => updateParams({ page: page + 1 })}
                 className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium disabled:opacity-40"
               >
                 次へ

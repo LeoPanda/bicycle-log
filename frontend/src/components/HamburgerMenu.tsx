@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink } from 'react-router-dom';
 import { Home, Folder, BarChart2, Settings, X, Sun, Moon, Monitor, LogOut, User } from 'lucide-react';
 
@@ -10,11 +11,39 @@ interface HamburgerMenuProps {
 }
 
 export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose, theme, setTheme }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm transition-opacity">
-      <div className="w-80 h-full bg-white dark:bg-slate-800 p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm transition-opacity"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="ナビゲーションメニュー"
+    >
+      <div
+        className="w-80 h-full bg-white dark:bg-slate-800 p-6 shadow-2xl flex flex-col justify-between overflow-y-auto transform transition-transform duration-200 ease-in-out"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div>
           <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-slate-700">
             <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -23,6 +52,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose, t
             <button
               onClick={onClose}
               title="Close"
+              aria-label="メニューを閉じる"
               className="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             >
               <X className="w-5 h-5" />
@@ -46,21 +76,6 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose, t
             </NavLink>
 
             <NavLink
-              to="/items"
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition ${
-                  isActive
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                }`
-              }
-            >
-              <Folder className="w-5 h-5" />
-              データ一覧
-            </NavLink>
-
-            <NavLink
               to="/analytics"
               onClick={onClose}
               className={({ isActive }) =>
@@ -73,6 +88,21 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose, t
             >
               <BarChart2 className="w-5 h-5" />
               可視化 / 分析
+            </NavLink>
+
+            <NavLink
+              to="/items"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition ${
+                  isActive
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                }`
+              }
+            >
+              <Folder className="w-5 h-5" />
+              データ一覧
             </NavLink>
 
             <NavLink
@@ -154,6 +184,7 @@ export const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ isOpen, onClose, t
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

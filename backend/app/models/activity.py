@@ -12,6 +12,7 @@ class ActivityBase(SQLModel):
     total_elevation_gain: float = Field(default=0.0)
     calories: Optional[float] = Field(default=None)
     summary_polyline: Optional[str] = Field(default=None)
+    route_id: Optional[int] = Field(default=None, foreign_key="routes.id")
 
 class Activity(ActivityBase, table=True):
     __tablename__ = "activities"
@@ -21,6 +22,7 @@ class Activity(ActivityBase, table=True):
     updated_at: datetime = Field(default_factory=datetime.now)
 
     bike: Optional["Bike"] = Relationship(back_populates="activities")
+    route: Optional["Route"] = Relationship(back_populates="activities")
     stay_logs: List["StayLog"] = Relationship(back_populates="activity")
 
 class ActivityCreate(ActivityBase):
@@ -36,3 +38,4 @@ class ActivityUpdate(SQLModel):
     total_elevation_gain: Optional[float] = None
     calories: Optional[float] = None
     summary_polyline: Optional[str] = None
+    route_id: Optional[int] = None

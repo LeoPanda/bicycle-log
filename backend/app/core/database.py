@@ -9,7 +9,7 @@ if db_dir and not os.path.exists(db_dir):
     os.makedirs(db_dir, exist_ok=True)
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(settings.DATABASE_URL, echo=False, connect_args=connect_args)
+engine = create_engine(settings.DATABASE_URL, echo=settings.SQL_ECHO, connect_args=connect_args)
 
 def init_db():
     # Enable PRAGMAs for SQLite
@@ -53,6 +53,13 @@ def init_db():
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_logs_place_id ON stay_logs(place_id);"))
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_logs_arrived_at ON stay_logs(arrived_at);"))
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_log_images_stay_log_id ON stay_log_images(stay_log_id);"))
+        
+        # Add route_id column to activities if not exists
+        try:
+            conn.execute(text("ALTER TABLE activities ADD COLUMN route_id INTEGER REFERENCES routes(id);"))
+            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_activities_route_id ON activities(route_id);"))
+        except Exception:
+            pass  # Column likely already exists
         conn.commit()
 
 def get_session():
