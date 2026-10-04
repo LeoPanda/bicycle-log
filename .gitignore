@@ -10,6 +10,7 @@ ENV/
 *.sqlite3
 data/*.db
 backup/
+restore_tmp/
 
 # Node.js / Frontend
 node_modules/
@@ -29,3 +30,7 @@ build/
 .DS_Store
 .vscode/
 .idea/
+
+# reports
+V*.*改訂レポート.md
+revise-log/*

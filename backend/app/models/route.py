@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
+from pydantic import NaiveDatetime
 from sqlmodel import SQLModel, Field, Relationship
 
 class RouteBase(SQLModel):
@@ -10,8 +11,8 @@ class Route(RouteBase, table=True):
     __tablename__ = "routes"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)
+    updated_at: NaiveDatetime = Field(default_factory=datetime.now)
 
     activities: List["Activity"] = Relationship(back_populates="route")
 

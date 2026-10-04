@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, MapPin, Mountain, RefreshCw, Trophy, ChevronRight, Calendar, X, CheckCircle2, Navigation as RouteIcon } from 'lucide-react';
+import { Activity, MapPin, Mountain, RefreshCw, Trophy, ChevronRight, Calendar, X, CheckCircle2, Navigation as RouteIcon, Search, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
-import { DashboardSummary } from '../types';
+import { DashboardSummary, SearchResponse } from '../types';
 
 type SyncPeriodOption = 'latest' | '1m' | '3m' | '6m' | '1y' | 'before_202509' | 'before_202410' | 'all';
 
@@ -11,6 +11,7 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [detectingRoutes, setDetectingRoutes] = useState(false);
+  const [backfillingEndpoints, setBackfillingEndpoints] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [syncPeriod, setSyncPeriod] = useState<SyncPeriodOption>('latest');
   const [syncResult, setSyncResult] = useState<{
@@ -18,6 +19,13 @@ export const DashboardPage: React.FC = () => {
     detected_stops: number;
     created_places: number;
   } | null>(null);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
 
@@ -36,6 +44,57 @@ export const DashboardPage: React.FC = () => {
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  // Real-time search debouncing
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults(null);
+      setIsSearching(false);
+      setShowDropdown(false);
+      return;
+    }
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.search(searchQuery.trim());
+        setSearchResults(res);
+        setShowDropdown(true);
+      } catch (err) {
+        console.error('Search failed:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleBackfillEndpoints = async () => {
+    if (!confirm('すべての過去アクティビティに対して、開始地点およびゴール地点の滞在スポット・ログを一括検出・登録しますか？')) {
+      return;
+    }
+    try {
+      setBackfillingEndpoints(true);
+      const res = await api.backfillEndpoints(true);
+      alert(`スタート・ゴール地点の検出が完了しました。\n処理対象アクティビティ: ${res.processed_activities} 件\n新規登録滞在ログ: ${res.created_endpoint_logs} 件`);
+      await fetchDashboard();
+    } catch (err: any) {
+      alert(`検出に失敗しました: ${err.message}`);
+    } finally {
+      setBackfillingEndpoints(false);
+    }
+  };
 
   const handleOpenSyncModal = () => {
     setSyncResult(null);
@@ -125,31 +184,146 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Top Banner / Sync */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
-        <div>
+      {/* Top Banner / Search / Sync */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">ダッシュボード</h1>
           <p className="mt-1 text-blue-100 text-sm">
             走行アクティビティと15分以上の滞在記録の概要を表示しています。
           </p>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Real-time Search Box */}
+        <div ref={searchContainerRef} className="relative w-full lg:max-w-md z-30">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-200" />
+            <input
+              type="text"
+              placeholder="滞在スポットや定番ルートを検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (searchResults) setShowDropdown(true); }}
+              className="w-full pl-10 pr-9 py-2.5 bg-white/15 focus:bg-white text-white focus:text-slate-900 placeholder-blue-200 focus:placeholder-slate-400 rounded-xl border border-white/30 focus:border-white text-sm outline-none backdrop-blur-md transition shadow-inner"
+            />
+            {isSearching ? (
+              <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-blue-200" />
+            ) : searchQuery ? (
+              <button
+                onClick={() => { setSearchQuery(''); setSearchResults(null); setShowDropdown(false); }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-200 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            ) : null}
+          </div>
+
+          {/* Search Suggest Dropdown */}
+          {showDropdown && searchResults && (
+            <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 max-h-96 overflow-y-auto p-2 space-y-3 z-50 animate-in fade-in duration-150">
+              {/* Places */}
+              <div>
+                <div className="px-3 py-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                  <span>滞在スポット ({searchResults.places.length})</span>
+                  <MapPin className="w-3.5 h-3.5" />
+                </div>
+                {searchResults.places.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-slate-400 italic">該当するスポットはありません</p>
+                ) : (
+                  <div className="space-y-1 mt-1">
+                    {searchResults.places.map((place) => (
+                      <div
+                        key={place.id}
+                        onClick={() => {
+                          setShowDropdown(false);
+                          navigate(`/items/${place.id}?type=place`);
+                        }}
+                        className="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition flex items-center justify-between gap-2"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                            {place.name}
+                          </div>
+                          {place.address && (
+                            <div className="text-[11px] text-slate-400 truncate max-w-xs">
+                              {place.address}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-semibold">
+                            {place.category_name || 'スポット'}
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-500">
+                            {place.visit_count}回
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Routes */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                <div className="px-3 py-1 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                  <span>定番ルート ({searchResults.routes.length})</span>
+                  <RouteIcon className="w-3.5 h-3.5 text-purple-500" />
+                </div>
+                {searchResults.routes.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-slate-400 italic">該当する定番ルートはありません</p>
+                ) : (
+                  <div className="space-y-1 mt-1">
+                    {searchResults.routes.map((route) => (
+                      <div
+                        key={route.id}
+                        onClick={() => {
+                          setShowDropdown(false);
+                          navigate(`/master?tab=routes&route_id=${route.id}`);
+                        }}
+                        className="px-3 py-2 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/40 cursor-pointer transition flex items-center justify-between gap-2"
+                      >
+                        <div className="min-w-0 font-bold text-xs text-slate-900 dark:text-white truncate">
+                          {route.name}
+                        </div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold shrink-0">
+                          走行 {route.activity_count} 回
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={handleBackfillEndpoints}
+            disabled={backfillingEndpoints || syncing}
+            title="全アクティビティの開始点・終了点を滞在スポットとして検出"
+            className="inline-flex items-center gap-1.5 bg-amber-500/30 hover:bg-amber-500/40 backdrop-blur-md text-white font-medium px-3.5 py-2.5 rounded-xl border border-amber-400/40 text-xs transition disabled:opacity-50"
+          >
+            <MapPin className={`w-3.5 h-3.5 ${backfillingEndpoints ? 'animate-spin' : ''}`} />
+            {backfillingEndpoints ? '検出中...' : '発着点検出'}
+          </button>
           <button
             onClick={handleDetectRoutes}
             disabled={detectingRoutes || syncing}
             title="定番ルートの検出"
-            className="inline-flex items-center gap-2 bg-emerald-500/30 hover:bg-emerald-500/40 backdrop-blur-md text-white font-medium px-4 py-2.5 rounded-xl border border-emerald-400/40 transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 bg-emerald-500/30 hover:bg-emerald-500/40 backdrop-blur-md text-white font-medium px-3.5 py-2.5 rounded-xl border border-emerald-400/40 text-xs transition disabled:opacity-50"
           >
-            <RouteIcon className={`w-4 h-4 ${detectingRoutes ? 'animate-spin' : ''}`} />
+            <RouteIcon className={`w-3.5 h-3.5 ${detectingRoutes ? 'animate-spin' : ''}`} />
             {detectingRoutes ? '検出中...' : '定番ルート検出'}
           </button>
           <button
             onClick={handleOpenSyncModal}
             disabled={syncing || detectingRoutes}
             title="Sync Strava"
-            className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-medium px-5 py-2.5 rounded-xl border border-white/30 transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-medium px-4 py-2.5 rounded-xl border border-white/30 text-xs transition disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? '同期中...' : 'Stravaデータ同期'}
           </button>
         </div>

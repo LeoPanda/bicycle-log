@@ -107,6 +107,21 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ comment })
     });
+  },
+
+  getSystemVersion: () => {
+    return request<{ version: string }>('/system/version');
+  },
+
+  search: (query: string) => {
+    return request<any>(`/search?q=${encodeURIComponent(query)}`);
+  },
+
+  backfillEndpoints: (allActivities = true) => {
+    return request<{ status: string; processed_activities: number; created_endpoint_logs: number }>(
+      `/strava/backfill-endpoints?all_activities=${allActivities}`,
+      { method: 'POST' }
+    );
   }
 };
 

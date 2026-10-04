@@ -145,3 +145,23 @@ export interface AnalyticsMetric {
   ride_count: number;
   calories_kcal: number;
 }
+
+export interface SearchPlaceResult {
+  id: string;
+  name: string;
+  category_name?: string;
+  category_icon?: string;
+  address?: string;
+  visit_count: number;
+}
+
+export interface SearchRouteResult {
+  id: number;
+  name: string;
+  activity_count: number;
+}
+
+export interface SearchResponse {
+  places: SearchPlaceResult[];
+  routes: SearchRouteResult[];
+}

@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
+from pydantic import NaiveDatetime
 from sqlmodel import SQLModel, Field, Relationship
 
 class ActivityTag(SQLModel, table=True):
@@ -21,7 +22,7 @@ class Tag(TagBase, table=True):
     __tablename__ = "tags"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)
 
 class TagCreate(TagBase):
     pass

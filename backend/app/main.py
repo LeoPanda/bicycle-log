@@ -17,7 +17,7 @@ from app.models.bike import Bike
 
 from app.routers import (
     internal, bikes, place_categories, places, activities,
-    stay_logs, tags, analytics, strava, routes
+    stay_logs, tags, analytics, strava, routes, search
 )
 
 # Setup JSON logging
@@ -51,6 +51,7 @@ app.include_router(tags.router)
 app.include_router(analytics.router)
 app.include_router(strava.router)
 app.include_router(routes.router)
+app.include_router(search.router)
 
 # Mount Uploads directory for images
 uploads_dir = os.path.join(os.path.dirname(settings.DATABASE_URL.replace("sqlite:///", "")), "uploads")
@@ -119,7 +120,11 @@ from fastapi.responses import HTMLResponse, FileResponse
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "project": settings.PROJECT_NAME, "version": settings.VERSION}
+    return {"status": "ok", "project": settings.PROJECT_NAME, "version": settings.APP_VERSION}
+
+@app.get("/api/system/version")
+def get_system_version():
+    return {"version": settings.APP_VERSION}
 
 @app.get("/{full_path:path}")
 def serve_spa(full_path: str):

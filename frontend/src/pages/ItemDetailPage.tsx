@@ -793,10 +793,20 @@ export const ItemDetailPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-bold text-slate-900 dark:text-white">
                         {stay.place_name || '滞在スポット'}
                       </h3>
+                      {stay.notes && stay.notes.includes('(スタート地点)') && (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                          スタート地点
+                        </span>
+                      )}
+                      {stay.notes && stay.notes.includes('(ゴール地点)') && (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                          ゴール地点
+                        </span>
+                      )}
                       {stay.category_name && (
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                           {stay.category_name}
@@ -804,7 +814,7 @@ export const ItemDetailPage: React.FC = () => {
                       )}
                     </div>
                     <p className="text-xs text-slate-500 flex items-center gap-2 mt-1">
-                      <span>到着: {new Date(stay.arrived_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{stay.notes && stay.notes.includes('(ゴール地点)') ? '到着: ' : '出発/到着: '}{new Date(stay.arrived_at).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</span>
                       <span>•</span>
                       <span>滞在時間: {Math.round(stay.stay_duration_seconds / 60)} 分</span>
                     </p>

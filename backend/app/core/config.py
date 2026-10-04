@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "bicycle-log"
     VERSION: str = "1.0.0"
+    APP_VERSION: str = "1.2"
     TZ: str = "Asia/Tokyo"
     LOG_LEVEL: str = "DEBUG"
     DATABASE_URL: str = "sqlite:///./data/app.db"

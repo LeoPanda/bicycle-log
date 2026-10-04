@@ -5,7 +5,7 @@ import {
   BarChart2, Calendar, MapPin, ExternalLink, RefreshCw, Activity as ActivityIcon,
   Mountain, Clock, Trophy, Flame, ChevronRight, Filter,
   Coffee, Store, Utensils, ShoppingBag, Landmark, Camera, Beer, Fuel, Navigation as RouteIcon,
-  Hotel, Trees, Film, Church, Train
+  Hotel, Trees, Film, Church, Train, Maximize2, Minimize2
 } from 'lucide-react';
 import L from 'leaflet';
 import { api } from '../services/api';
@@ -90,6 +90,7 @@ export const AnalyticsPage: React.FC = () => {
   const [selectedMarker, setSelectedMarker] = useState<HeatmapMarker | null>(null);
   const [showSpots, setShowSpots] = useState(true);
   const [isGrayscale, setIsGrayscale] = useState(true);
+  const [isFullscreenMap, setIsFullscreenMap] = useState(false);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
   const [loadingHeatmap, setLoadingHeatmap] = useState(false);
 
@@ -234,6 +235,27 @@ export const AnalyticsPage: React.FC = () => {
       }
     }
   }, [isGrayscale]);
+
+  // Invalidate map size and handle Escape key on fullscreen toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreenMap) {
+        setIsFullscreenMap(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 150);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timer);
+    };
+  }, [isFullscreenMap]);
 
   // Update map layers on data change
   useEffect(() => {
@@ -778,39 +800,186 @@ export const AnalyticsPage: React.FC = () => {
                 </button>
               </div>
             )}
+            {/* Fullscreen Toggle Button */}
+            <button
+              onClick={() => setIsFullscreenMap(!isFullscreenMap)}
+              title={isFullscreenMap ? "通常表示に戻す (Esc)" : "全画面で地図を拡大"}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition bg-blue-600 hover:bg-blue-700 text-white shadow-sm cursor-pointer"
+            >
+              {isFullscreenMap ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <span>{isFullscreenMap ? "縮小" : "全画面拡大"}</span>
+            </button>
           </div>
         </div>
 
-        {/* Interactive Route Map Canvas */}
-        <div className="w-full h-[450px] rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-inner flex items-center justify-center z-0">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        {/* Interactive Route Map Canvas Container */}
+        <div
+          className={
+            isFullscreenMap
+              ? "fixed inset-0 z-50 bg-slate-900/95 flex flex-col p-4 backdrop-blur-md animate-in fade-in duration-150"
+              : "w-full h-[450px] rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-inner flex items-center justify-center z-0"
+          }
+        >
+          {/* Fullscreen Top Control Bar */}
+          {isFullscreenMap && (
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-2 border-b border-slate-800 text-white">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-rose-500" />
+                <h3 className="font-bold text-sm">Polyline ヒートマップ & ルート解析 (全画面)</h3>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Year Select in Fullscreen */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => {
+                    const y = e.target.value;
+                    setSelectedYear(y);
+                    fetchHeatmapData(y);
+                  }}
+                  className="px-3 py-1 rounded-lg border border-slate-700 bg-slate-800 text-xs font-bold text-white focus:outline-none"
+                >
+                  {availableYears.map((y) => (
+                    <option key={y} value={y}>{y}年</option>
+                  ))}
+                  <option value="all">すべての年</option>
+                </select>
+
+                {/* Toggles in Fullscreen */}
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={showSpots}
+                    onChange={(e) => setShowSpots(e.target.checked)}
+                    className="rounded border-slate-600 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
+                  />
+                  <span>スポット</span>
+                </label>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isGrayscale}
+                    onChange={(e) => setIsGrayscale(e.target.checked)}
+                    className="rounded border-slate-600 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  />
+                  <span>グレースケール</span>
+                </label>
+
+                <button
+                  onClick={() => setIsFullscreenMap(false)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold transition"
+                >
+                  <Minimize2 className="w-4 h-4" /> 閉じる (Esc)
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div ref={mapContainerRef} className="w-full h-full flex-1 rounded-xl overflow-hidden" />
+          
           {loadingHeatmap && (
             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[1001]">
               <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
             </div>
           )}
 
-          {/* Map Overlay Controls / Info Box */}
+          {/* Map Overlay: Spot Info Subwindow */}
           {selectedMarker && (
-            <div className="absolute bottom-4 left-4 right-4 sm:right-auto max-w-sm bg-slate-800/90 backdrop-blur-md border border-slate-700 p-4 rounded-xl text-white shadow-xl space-y-2 animate-in fade-in duration-200 z-[1000]">
+            <div className="absolute bottom-4 left-4 right-4 sm:right-auto max-w-sm bg-slate-800/95 backdrop-blur-md border border-slate-700 p-4 rounded-xl text-white shadow-2xl space-y-2 animate-in fade-in duration-200 z-[1000]">
               <div className="flex items-center justify-between">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  {selectedMarker.category_name}
+                  {selectedMarker.category_name || 'スポット'}
                 </span>
-                <button onClick={() => setSelectedMarker(null)} title="Close" className="text-slate-400 hover:text-white">
+                <button onClick={() => setSelectedMarker(null)} title="Close" className="text-slate-400 hover:text-white p-1">
                   ✕
                 </button>
               </div>
-              <h4 className="font-bold text-sm">{selectedMarker.name}</h4>
-              <p className="text-xs text-slate-400">{selectedMarker.address || '住所情報なし'}</p>
-              <div className="flex items-center justify-between pt-2 border-t border-slate-700">
+              <h4 className="font-bold text-sm text-emerald-100">{selectedMarker.name}</h4>
+              <p className="text-xs text-slate-300">{selectedMarker.address || '住所情報なし'}</p>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-700/80">
                 <span className="text-xs font-semibold text-emerald-400">訪問回数: {selectedMarker.visit_count} 回</span>
                 <button
                   onClick={() => navigate(`/items/${selectedMarker.place_id}?type=place`)}
                   title="View Details"
-                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition"
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition"
                 >
                   スポット詳細
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Map Overlay: Regular Route Info Subwindow */}
+          {selectedRoute && (
+            <div className="absolute bottom-4 left-4 right-4 sm:right-auto max-w-sm bg-slate-800/95 backdrop-blur-md border border-purple-500/40 p-4 rounded-xl text-white shadow-2xl space-y-2.5 animate-in fade-in duration-200 z-[1000]">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                  <RouteIcon className="w-3 h-3 text-purple-400" /> 定番ルート
+                </span>
+                <button onClick={() => setSelectedRoute(null)} title="Close" className="text-slate-400 hover:text-white p-1">
+                  ✕
+                </button>
+              </div>
+              <h4 className="font-bold text-sm text-purple-100">{selectedRoute.name}</h4>
+              <p className="text-xs text-slate-300">
+                走行回数: <span className="font-extrabold text-purple-400 text-sm">{selectedRoute.activity_count}</span> 回
+              </p>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-700/80">
+                <button
+                  onClick={() => handleOpenRouteModal(selectedRoute.route_id)}
+                  title="Route Detail Modal"
+                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition"
+                >
+                  定番ルート詳細
+                </button>
+                <button
+                  onClick={() => navigate(`/master?tab=routes&route_id=${selectedRoute.route_id}`)}
+                  title="Master Management"
+                  className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg transition"
+                >
+                  マスタ管理へ
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Map Overlay: Single Polyline Activity Info Subwindow */}
+          {selectedPolyline && (
+            <div className="absolute bottom-4 left-4 right-4 sm:right-auto max-w-sm bg-slate-800/95 backdrop-blur-md border border-rose-500/40 p-4 rounded-xl text-white shadow-2xl space-y-2.5 animate-in fade-in duration-200 z-[1000]">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                  <ActivityIcon className="w-3 h-3 text-rose-400" /> アクティビティ走行ログ
+                </span>
+                <button onClick={() => setSelectedPolyline(null)} title="Close" className="text-slate-400 hover:text-white p-1">
+                  ✕
+                </button>
+              </div>
+              <h4 className="font-bold text-sm text-rose-100">{selectedPolyline.name}</h4>
+              <div className="flex items-center gap-2 text-xs text-slate-300">
+                <span>{new Date(selectedPolyline.start_date).toLocaleDateString('ja-JP')}</span>
+                {selectedPolyline.distance_km !== undefined && (
+                  <>
+                    <span>•</span>
+                    <span className="font-bold text-rose-400">{selectedPolyline.distance_km} km</span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/80">
+                {selectedPolyline.strava_url && (
+                  <a
+                    href={selectedPolyline.strava_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-2.5 py-1.5 border border-orange-500/40 text-orange-400 hover:bg-orange-500/20 rounded-lg text-xs font-semibold transition flex items-center gap-1"
+                  >
+                    Strava
+                  </a>
+                )}
+                <button
+                  onClick={() => navigate(`/items/${selectedPolyline.activity_id}?type=activity`)}
+                  title="Activity Detail"
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition"
+                >
+                  アクティビティ詳細へ
                 </button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
+from pydantic import NaiveDatetime
 from sqlmodel import SQLModel, Field, Relationship
 
 class PlaceBase(SQLModel):
@@ -14,8 +15,8 @@ class Place(PlaceBase, table=True):
     __tablename__ = "places"
 
     id: str = Field(primary_key=True)  # Google Place ID or custom UUID
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)
+    updated_at: NaiveDatetime = Field(default_factory=datetime.now)
 
     category: Optional["PlaceCategory"] = Relationship(back_populates="places")
     stay_logs: List["StayLog"] = Relationship(back_populates="place")

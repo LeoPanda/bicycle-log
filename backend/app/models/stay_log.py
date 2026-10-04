@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
+from pydantic import NaiveDatetime
 from sqlmodel import SQLModel, Field, Relationship
 
 class StayLogImageBase(SQLModel):
@@ -12,8 +13,8 @@ class StayLogImage(StayLogImageBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     stay_log_id: int = Field(foreign_key="stay_logs.id", nullable=False)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)
+    updated_at: NaiveDatetime = Field(default_factory=datetime.now)
 
     stay_log: Optional["StayLog"] = Relationship(back_populates="images")
 
@@ -23,8 +24,8 @@ class StayLogImageCreate(StayLogImageBase):
 class StayLogBase(SQLModel):
     activity_id: int = Field(foreign_key="activities.id", nullable=False)
     place_id: str = Field(foreign_key="places.id", nullable=False)
-    arrived_at: datetime = Field(nullable=False)
-    left_at: datetime = Field(nullable=False)
+    arrived_at: NaiveDatetime = Field(nullable=False)
+    left_at: NaiveDatetime = Field(nullable=False)
     stay_duration_seconds: int = Field(nullable=False)
     stay_latitude: float = Field(nullable=False)
     stay_longitude: float = Field(nullable=False)
@@ -34,8 +35,8 @@ class StayLog(StayLogBase, table=True):
     __tablename__ = "stay_logs"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: NaiveDatetime = Field(default_factory=datetime.now)
+    updated_at: NaiveDatetime = Field(default_factory=datetime.now)
 
     activity: Optional["Activity"] = Relationship(back_populates="stay_logs")
     place: Optional["Place"] = Relationship(back_populates="stay_logs")
