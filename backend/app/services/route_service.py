@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, TypedDict
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
@@ -11,9 +11,19 @@ from app.schemas.route import RouteUpdate
 from app.services.polyline_utils import (
     calculate_fast_similarity,
     decode_polyline,
-    haversine_distance,
     resample_points,
 )
+
+
+class PrecomputedActivity(TypedDict):
+    pts: List[Tuple[float, float]]
+    min_lat: float
+    max_lat: float
+    min_lng: float
+    max_lng: float
+    distance: float
+    start_pt: Tuple[float, float]
+    end_pt: Tuple[float, float]
 
 logger = logging.getLogger("app.services.route")
 
@@ -54,8 +64,10 @@ def detect_and_group_routes(session: Session) -> Dict[str, int]:
         return {"detected_routes": 0, "grouped_activities": 0}
 
     # 1. Precompute metadata and resampled points
-    precomputed = {}
+    precomputed: Dict[int, PrecomputedActivity] = {}
     for act in activities:
+        if act.id is None:
+            continue
         raw_pts = decode_polyline(act.summary_polyline)
         if not raw_pts:
             continue
@@ -151,7 +163,7 @@ def detect_and_group_routes(session: Session) -> Dict[str, int]:
     grouped_activity_count = 0
     created_route_count = 0
 
-    for idx, cluster in enumerate(clusters, start=1):
+    for cluster in clusters:
         cluster_acts = [act_map[aid] for aid in cluster]
         existing_route_ids = set(act.route_id for act in cluster_acts if act.route_id is not None)
         target_route: Optional[Route] = None

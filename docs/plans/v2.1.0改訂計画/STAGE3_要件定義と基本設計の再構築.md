@@ -68,7 +68,7 @@ python3 scripts/traceability_checker.py --mode design
   - 定常コア 8 項目の充足性
   - Profile A 固有要件（Alembic、IAP JWT、MSW）の網羅性
   - `REQ-*` トレーサビリティ 100% カバレッジ
-- 成果物: `docs/reports/基本設計レビュー結果報告書_v2.0.0.md`
+- 成果物: `docs/reports/基本設計レビュー結果報告書_v2.1.0.md`
 
 ---
 
@@ -77,7 +77,7 @@ python3 scripts/traceability_checker.py --mode design
 基本設計レビューが `PASS`（または `CONDITIONAL PASS`）となった後、コンダクターが台帳を更新する。
 
 ```bash
-python3 scripts/state_manager.py record-review arch PASS docs/reports/基本設計レビュー結果報告書_v2.0.0.md
+python3 scripts/state_manager.py record-review arch PASS docs/reports/基本設計レビュー結果報告書_v2.1.0.md
 ```
 
 ---

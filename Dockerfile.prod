@@ -30,6 +30,7 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
+RUN rm -rf /app/data
 # フロントエンドのビルド成果物を static へコピー (FastAPIが直接配信)
 COPY --from=frontend-builder /app/frontend/dist ./static
 # 初回データロード用に data をコピー

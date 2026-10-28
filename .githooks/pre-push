@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# AI Harness Pre-Push Hook (CI Dry-Run & Hard Gate)
+set -e
+
+echo "🔍 [Pre-push Hook] GitHub へのプッシュ前ローカル CI 検証を開始します..."
+
+# Python 仮想環境の検出
+VENV_PREFIX=""
+if [ -f ".venv/bin/ruff" ]; then
+    VENV_PREFIX="../.venv/bin/"
+elif [ -f "backend/.venv/bin/ruff" ]; then
+    VENV_PREFIX="../backend/.venv/bin/"
+fi
+
+# 1. Backend CI checks
+if [ -d "backend" ]; then
+    echo "▶ [Backend] ruff check..."
+    if command -v ruff >/dev/null 2>&1; then
+        (cd backend && ruff check .)
+    elif [ -n "$VENV_PREFIX" ]; then
+        (cd backend && ${VENV_PREFIX}ruff check .)
+    fi
+
+    echo "▶ [Backend] mypy..."
+    if command -v mypy >/dev/null 2>&1; then
+        (cd backend && mypy app)
+    elif [ -n "$VENV_PREFIX" ]; then
+        (cd backend && ${VENV_PREFIX}mypy app)
+    fi
+
+    echo "▶ [Backend] pytest..."
+    if command -v pytest >/dev/null 2>&1; then
+        (cd backend && pytest)
+    elif [ -n "$VENV_PREFIX" ]; then
+        (cd backend && ${VENV_PREFIX}pytest)
+    fi
+fi
+
+# 2. Frontend CI checks
+if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
+    echo "▶ [Frontend] type-check & build..."
+    (cd frontend && npm run type-check && npm run build)
+fi
+
+# 3. Harness Guard checks
+if [ -f "scripts/harness_guard.py" ]; then
+    echo "▶ [Hard Gate] harness_guard --all..."
+    python3 scripts/harness_guard.py --all
+fi
+
+echo "✅ [Pre-push Hook] すべての事前検証をクリアしました。プッシュを許可します。"

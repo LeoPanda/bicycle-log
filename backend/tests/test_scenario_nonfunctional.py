@@ -123,7 +123,7 @@ def test_nonfunctional_secret_settings_validation():
     環境変数の Pydantic Settings バリデーション検証
     """
     from app.core.config import settings
-    assert settings.APP_VERSION == "2.0.0"
+    assert settings.APP_VERSION == "2.1.0"
     assert settings.DATABASE_URL is not None
 
 

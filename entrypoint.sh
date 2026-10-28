@@ -28,6 +28,17 @@ if [ ! -f /app/data/app.db ] || [ ! -s /app/data/app.db ]; then
 fi
 
 # Alembic マイグレーション実行保証（スキーマ最新化 / フェイルセーフ）
+echo "Checking database migration baseline..."
+DB_PATH="/app/data/app.db"
+if [ -f "$DB_PATH" ]; then
+  HAS_BIKES=$(sqlite3 "$DB_PATH" "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='bikes';" 2>/dev/null || echo 0)
+  HAS_ALEMBIC=$(sqlite3 "$DB_PATH" "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='alembic_version';" 2>/dev/null || echo 0)
+  if [ "$HAS_BIKES" = "1" ] && [ "$HAS_ALEMBIC" = "0" ]; then
+    echo "Existing v1.2 database detected without alembic_version. Stamping baseline 0001..."
+    alembic stamp 0001
+  fi
+fi
+
 echo "Running Alembic migrations..."
 alembic upgrade head
 

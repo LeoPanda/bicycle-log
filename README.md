@@ -98,7 +98,7 @@ flowchart TB
     Litestream -->|Realtime Backup| GCS_Bucket
     FastAPI -->|Image Upload| GCS_Bucket
     FastAPI -->|Sync Activities| Strava
-    FastAPI -->|Nearby Search (Fallback)| Places
+    FastAPI -->|"Nearby Search (Fallback)"| Places
     SecretManager -.->|Inject Env| CloudRun
 ```
 

@@ -619,4 +619,4 @@ HTTP ステータスコードが 4xx / 5xx の場合、以下の標準形式で�
 | 1.1.0 | 2026-08-30 | - | 定番ルート管理サービス (Routes API) およびカテゴリ表示順 (`sort_order`) 仕様の追加・一元化 |
 | 1.1 | 2026-09-02 | 1.1.001 | Placeモデルへの `comment` 列追加および `PUT /api/stay-logs/images/{image_id}` 写真コメント更新APIの追加 |
 | 1.2 | 2026-09-30 | 1.2.001 | システムバージョンAPI、横断検索API（`/api/search`）、発着点検出API（`/api/strava/backfill-endpoints`）の追加 |
-| 2.0.0 | 2026-10-28 | 2.0.001 | system-dev-pipeline V2.6 準拠: 全エンドポイントへの要件ID (`[REQ-F01]`〜`[REQ-F07]`, `[REQ-NFxx]`) の完全バインド |
+| 2.1.0 | 2026-10-28 | 2.1.001 | system-dev-pipeline V2.6 準拠: 全エンドポイントへの要件ID (`[REQ-F01]`〜`[REQ-F07]`, `[REQ-NFxx]`) の完全バインド |

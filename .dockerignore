@@ -1,0 +1,17 @@
+.git
+.gitignore
+.gcloudignore
+.github
+.venv
+__pycache__
+*.pyc
+backup
+github_errorlog
+tests
+backend/tests
+backend/data
+backend/.mypy_cache
+backend/.pytest_cache
+backend/.ruff_cache
+frontend/node_modules
+frontend/dist

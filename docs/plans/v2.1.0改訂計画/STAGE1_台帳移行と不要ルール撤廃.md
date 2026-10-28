@@ -15,11 +15,11 @@
 ### 実行コマンド
 ```bash
 # 1. バックアップディレクトリの準備
-mkdir -p backup/v2.0.0_snapshots
+mkdir -p backup/v2.1.0_snapshots
 
 # 2. 現行DBのコールドバックアップ（タイムスタンプ付き）
-cp data/app.db backup/v2.0.0_snapshots/app_pre_stage1_$(date +%Y%m%d_%H%M%S).db
-cp data/app.db backup/v2.0.0_pre_upgrade_snapshot.db
+cp data/app.db backup/v2.1.0_snapshots/app_pre_stage1_$(date +%Y%m%d_%H%M%S).db
+cp data/app.db backup/v2.1.0_pre_upgrade_snapshot.db
 
 # 3. 現行レコード数の記録
 sqlite3 data/app.db "
@@ -32,9 +32,9 @@ SELECT 'tags', count(*) FROM tags UNION ALL
 SELECT 'activity_tags', count(*) FROM activity_tags UNION ALL
 SELECT 'place_tags', count(*) FROM place_tags UNION ALL
 SELECT 'stay_log_images', count(*) FROM stay_log_images;
-" > backup/v2.0.0_snapshots/record_counts_baseline.txt
+" > backup/v2.1.0_snapshots/record_counts_baseline.txt
 
-cat backup/v2.0.0_snapshots/record_counts_baseline.txt
+cat backup/v2.1.0_snapshots/record_counts_baseline.txt
 ```
 
 ---
@@ -45,7 +45,7 @@ cat backup/v2.0.0_snapshots/record_counts_baseline.txt
 
 ### 引き継ぐ主要メタデータ
 - `project_name`: `bicycle-log`
-- `app_version`: `2.0.0`
+- `app_version`: `2.1.0`
 - `deployment_profile`: `Profile A: クラウド公開 (Cloud-Native Web Service)`
 - `mock_mode`: `ENABLED`
 - `execution_mode`: `GLOBAL_PLUGIN`
@@ -53,7 +53,7 @@ cat backup/v2.0.0_snapshots/record_counts_baseline.txt
 - `phases`: PHASE 1〜8 はすべて COMPLETED（履歴保持）
 - `revisions`:
   - `current_revision_status`: `ACTIVE`
-  - `active_revision_id`: `2.0.001`
+  - `active_revision_id`: `2.1.001`
   - `current_turn`: 1
   - `history`: 過去の 1.1.001, 1.2.001, 1.2.002 を完全格納
 

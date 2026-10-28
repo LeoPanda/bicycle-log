@@ -28,11 +28,11 @@
 6. **要件トレーサビリティの完全性**:
    - `traceability_checker.py --mode full` が PASS していること。
 
-- 成果物: `docs/reports/システム総合レビュー結果報告書_v2.0.0.md`
+- 成果物: `docs/reports/システム総合レビュー結果報告書_v2.1.0.md`
 - 必須判定: **`RELEASE APPROVED`**
 
 ```bash
-python3 scripts/state_manager.py record-review system "RELEASE APPROVED" docs/reports/システム総合レビュー結果報告書_v2.0.0.md
+python3 scripts/state_manager.py record-review system "RELEASE APPROVED" docs/reports/システム総合レビュー結果報告書_v2.1.0.md
 ```
 
 ---

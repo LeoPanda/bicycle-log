@@ -76,10 +76,10 @@ python3 scripts/harness_guard.py --all
   - 1ファイル最大行数（フロント250行 / バック400行）の完全遵守。
   - 直書きモックの完全排除（MSW集約）。
   - レイヤーバイパス、生SQL DDL、例外握りつぶしのゼロ件確認。
-- 成果物: `docs/reports/コード品質レビュー及びリファクタリング提案書_v2.0.0.md`（判定: `CLEAN`）
+- 成果物: `docs/reports/コード品質レビュー及びリファクタリング提案書_v2.1.0.md`（判定: `CLEAN`）
 
 ```bash
-python3 scripts/state_manager.py record-review code CLEAN docs/reports/コード品質レビュー及びリファクタリング提案書_v2.0.0.md
+python3 scripts/state_manager.py record-review code CLEAN docs/reports/コード品質レビュー及びリファクタリング提案書_v2.1.0.md
 ```
 
 ---

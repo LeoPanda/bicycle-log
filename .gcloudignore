@@ -1,4 +1,4 @@
-# .gcloudignore to allow sending data/app.db to Cloud Build
+# .gcloudignore
 .git
 .gitignore
 
@@ -8,6 +8,9 @@ frontend/dist/
 .venv/
 __pycache__/
 *.pyc
+backup/
+github_errorlog/
+backend/data/
 
-# Explicitly include data/app.db
+# Explicitly include data/app.db (for initial seed fallback)
 !data/app.db

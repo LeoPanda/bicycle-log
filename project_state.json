@@ -9,9 +9,9 @@
     "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
     "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
     "current_branch": "feature",
-    "updated_at": "2026-10-28T13:12:57.125472+09:00",
+    "updated_at": "2026-10-28T13:41:42.968984+09:00",
     "updated_by": "conductor",
-    "md_checksum": "sha256:618acc4ef9a72adbd073332a8c116c999e8c314aab7e7b71119b79af84f7118e"
+    "md_checksum": "sha256:0ed7e0e03bd19d56e6a6e44f1fc9ce32a2336b6fb5ff36a7ec90822d9ee3fb7c"
   },
   "current_status": "PRODUCTION_ACTIVE",
   "phases": {
@@ -209,7 +209,7 @@
       "high": 0,
       "medium": 0,
       "low": 0,
-      "report_path": "docs/reports/基本設計レビュー結果報告書_v2.0.0.md",
+      "report_path": "docs/reports/基本設計レビュー結果報告書_v2.1.0.md",
       "updated_at": "2026-10-28T08:58:23.333152+09:00"
     },
     "code_review": {
@@ -218,7 +218,7 @@
       "high": 0,
       "medium": 0,
       "low": 0,
-      "report_path": "docs/reports/コード品質レビュー及びリファクタリング提案書_v2.0.0.md",
+      "report_path": "docs/reports/コード品質レビュー及びリファクタリング提案書_v2.1.0.md",
       "updated_at": "2026-10-28T09:44:26.175718+09:00"
     },
     "system_review": {
@@ -227,7 +227,7 @@
       "high": 0,
       "medium": 0,
       "low": 0,
-      "report_path": "docs/reports/システム総合レビュー結果報告書_v2.0.0.md",
+      "report_path": "docs/reports/システム総合レビュー結果報告書_v2.1.0.md",
       "updated_at": "2026-10-28T09:51:19.244972+09:00"
     }
   },
@@ -294,12 +294,13 @@
         "completed_at": "2026-10-03"
       },
       {
-        "id": "2.0.001",
+        "id": "2.1.001",
         "title": "機能改訂",
         "status": "COMPLETED",
         "started_at": "2026-10-28T09:52:18.612362+09:00",
         "completed_at": "2026-10-28T09:52:43.667871+09:00",
-        "branch": "feature"
+        "branch": "feature",
+        "version": "v2.1.0"
       },
       {
         "id": "REV-20261028-01",

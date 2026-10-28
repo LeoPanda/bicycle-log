@@ -41,6 +41,7 @@ build/
 # reports
 V*.*改訂レポート.md
 revise-log/*
+github_errorlog/
 
 # Antigravity Metrics Raw Turns
 metrics/turns/

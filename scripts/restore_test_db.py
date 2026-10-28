@@ -103,7 +103,7 @@ def reset_and_seed_db():
 
 def verify_db_counts():
     import sqlite3
-    baseline_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backup", "v2.0.0_snapshots", "record_counts_baseline.txt")
+    baseline_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backup", "v2.1.0_snapshots", "record_counts_baseline.txt")
     if not os.path.exists(baseline_file):
         print(f"Error: baseline file {baseline_file} not found.")
         sys.exit(1)

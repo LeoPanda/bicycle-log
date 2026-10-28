@@ -23,7 +23,7 @@
 3. **生SQL DDL の撤廃**:
    - `backend/app/core/database.py` の `CREATE TABLE IF NOT EXISTS ...` 生SQLコードを完全削除。
 4. **データ整合性検証**:
-   - マイグレーション適用後にレコード件数を取得し、STAGE 1 で取得した `backup/v2.0.0_snapshots/record_counts_baseline.txt` と 1 件の狂いもなく一致することを確認。
+   - マイグレーション適用後にレコード件数を取得し、STAGE 1 で取得した `backup/v2.1.0_snapshots/record_counts_baseline.txt` と 1 件の狂いもなく一致することを確認。
 
 ---
 

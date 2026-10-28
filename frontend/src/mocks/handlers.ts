@@ -6,7 +6,7 @@ export const handlers = [
     return HttpResponse.json({
       status: 'ok',
       project: 'bicycle-log',
-      version: '2.0.0',
+      version: '2.1.0',
     });
   }),
 

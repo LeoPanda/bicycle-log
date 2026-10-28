@@ -1,6 +1,6 @@
 import logging
 import math
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 logger = logging.getLogger("app.services.polyline_utils")
 

@@ -13,7 +13,7 @@
 
 担当: 🛡️ `qa-engineer`
 
-`docs/plans/scenario-test/v2.0.0_シナリオテスト計画書.md` を作成する。
+`docs/plans/scenario-test/v2.1.0_シナリオテスト計画書.md` を作成する。
 
 ### 必須検証シナリオ群（異常系比率 20% 以上）
 1. **自転車・ギア管理シナリオ**:
@@ -69,7 +69,7 @@ python3 scripts/traceability_checker.py --mode full
 
 ## 4. テスト結果レポートの生成と台帳更新
 
-- 成果物: `docs/reports/v2.0.0_スルーテスト結果レポート.md`
+- 成果物: `docs/reports/v2.1.0_スルーテスト結果レポート.md`
 - 成功率 100% のエビデンスを記録する。
 
 ---
@@ -82,7 +82,7 @@ python3 scripts/traceability_checker.py --mode full
 - [ ] シナリオテスト（正常系・異常系）がすべて成功していること。
 - [ ] モック有効/無効両モードで動作が確認されていること。
 - [ ] `traceability_checker.py --mode full` が PASS していること。
-- [ ] `docs/reports/v2.0.0_スルーテスト結果レポート.md` が作成されていること。
+- [ ] `docs/reports/v2.1.0_スルーテスト結果レポート.md` が作成されていること。
 
 > **承認後の Git コミットメッセージ例**:
 > `test(qa): STAGE 6 - スルーテスト自動完遂およびトレーサビリティ100%達成`

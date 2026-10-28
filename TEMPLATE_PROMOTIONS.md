@@ -20,6 +20,7 @@
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
 | PROP-001 | PAT-SYS-007 | skeletons/profile-a/, rules/AGENTS.md | CI・スケルトン・シナリオテスト整合性担保規約 | ✅ PASS (検証完了) | 待機中 | 2026-10-28 |
 | PROP-002 | PAT-SYS-008 | rules/AGENTS.md, scripts/state_manager.py | フェーズ・ステージ境界厳格遵守および状態台帳完全性監査規約 | ✅ PASS (投函完了) | 待機中 | 2026-10-28 |
+| PROP-003 | PAT-DOC-003 | rules/AGENTS.md, scripts/harness_guard.py | Mermaid特殊記号・括弧クォート強制および静的監査規約 | ✅ PASS (投函完了) | 待機中 | 2026-10-28 |
 
 ---
 
@@ -47,4 +48,15 @@
   - `system-dev-pipeline/rules/AGENTS.md`: 指示された Stage / Phase 境界の厳格遵守規約（不可逆な外部影響操作の先走り禁止）の明記
   - `system-dev-pipeline/rules/AGENTS.md`: 改訂完了時における全セクション完全監査規約（決定事項・未決事項・バージョン・ブランチの一致検証）の明記
   - `scripts/state_manager.py`: `complete-revision` 実行時に決定事項の更新とメタデータの完全性監査を行う安全機構の組み込み
+- **Central Knowledge Hub 状態**: `~/.gemini/knowledge-hub/inbox/` へ投函完了 (INBOX_PENDING)
+
+### [PROP-003]: Mermaid特殊記号・括弧クォート強制および静的監査規約
+- **原票ID**: `CLAIM-20261028-bicycle-log-PAT-DOC-003` (./promotions/CLAIM-20261028-bicycle-log-PAT-DOC-003.md)
+- **参照WikiパターンID**: PAT-DOC-003 (./wiki/patterns/universal/PAT-DOC-003_mermaid_label_quoting.md)
+- **関連エージェント/スキル**: `architect` / `conductor` / `qa-engineer` / `harness_guard`
+- **改訂動機・背景**:
+  - `README.md` 等の Mermaid ダイアグラムにおいて、矢印ラベル内に丸括弧 `()` や隅付き括弧 `【】` 等の特殊記号がクォートなしで記述され、GitHub 上で `Unable to render rich display` パースエラーが発生した問題を根絶するため。過去に `template` リポジトリでも同種修正（コミット `a86ba88`）があったが知見未昇格だったため再発していた。
+- **変更内容概要**:
+  - `system-dev-pipeline/rules/AGENTS.md`: Mermaid 矢印ラベルおよびノード名に特殊記号を含む場合は必ずダブルクォーテーション（`"..."`）で囲む規約の明文化
+  - `scripts/harness_guard.py`: Markdown 内の Mermaid ブロックを抽出し、クォートされていない括弧付き矢印ラベルをコミット前に機械遮断・警告するルールの導入
 - **Central Knowledge Hub 状態**: `~/.gemini/knowledge-hub/inbox/` へ投函完了 (INBOX_PENDING)
