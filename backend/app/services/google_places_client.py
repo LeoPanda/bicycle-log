@@ -1,9 +1,11 @@
 import logging
+from typing import Any, Dict, List, Optional, Tuple
+
 import httpx
-from typing import Optional, List, Dict, Any, Tuple
 from sqlmodel import Session, select
-from app.models.category import PlaceCategory
+
 from app.core.config import settings
+from app.models.category import PlaceCategory
 
 logger = logging.getLogger("app.services.google_places")
 

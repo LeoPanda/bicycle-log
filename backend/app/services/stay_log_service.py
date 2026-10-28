@@ -1,15 +1,15 @@
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from sqlmodel import Session, select
+from typing import Any, Dict, List, Optional
+
 from fastapi import HTTPException, status
-from app.models.stay_log import StayLog, StayLogImage
-from app.models.place import Place
-from app.models.category import PlaceCategory
+from sqlmodel import Session, select
+
 from app.models.activity import Activity
-from app.schemas.stay_log import (
-    StayLogCreate, StayLogUpdate, StayLogImageUpdate, UpdateStayLogPlaceRequest
-)
-from app.services.image_service import optimize_and_save_image
+from app.models.category import PlaceCategory
+from app.models.place import Place
+from app.models.stay_log import StayLog, StayLogImage
+from app.schemas.stay_log import StayLogCreate, StayLogImageUpdate, StayLogUpdate, UpdateStayLogPlaceRequest
+
 
 def list_stay_logs(session: Session) -> List[Dict[str, Any]]:
     stay_logs = session.exec(select(StayLog).order_by(StayLog.arrived_at.desc())).all()
@@ -29,13 +29,13 @@ def get_stay_log(session: Session, stay_id: int) -> Dict[str, Any]:
     stay = session.get(StayLog, stay_id)
     if not stay:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stay log not found")
-    
+
     place = session.get(Place, stay.place_id)
     act = session.get(Activity, stay.activity_id)
     images = session.exec(
         select(StayLogImage).where(StayLogImage.stay_log_id == stay_id).order_by(StayLogImage.display_order.asc())
     ).all()
-    
+
     s_dict = stay.model_dump()
     s_dict["place_name"] = place.name if place else ""
     s_dict["place"] = place
@@ -54,12 +54,12 @@ def update_stay_log(session: Session, stay_id: int, stay_in: StayLogUpdate) -> S
     stay = session.get(StayLog, stay_id)
     if not stay:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stay log not found")
-    
+
     stay_data = stay_in.model_dump(exclude_unset=True)
     for key, value in stay_data.items():
         setattr(stay, key, value)
     stay.updated_at = datetime.now()
-    
+
     session.add(stay)
     session.commit()
     session.refresh(stay)
@@ -69,7 +69,7 @@ def update_stay_log_place(session: Session, stay_id: int, place_in: UpdateStayLo
     stay = session.get(StayLog, stay_id)
     if not stay:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stay log not found")
-    
+
     cat_name = place_in.category_name or "未分類"
     category = session.exec(select(PlaceCategory).where(PlaceCategory.name == cat_name)).first()
     if not category:
@@ -95,7 +95,7 @@ def update_stay_log_place(session: Session, stay_id: int, place_in: UpdateStayLo
             place.category_id = category.id
         place.updated_at = datetime.now()
         session.add(place)
-    
+
     session.commit()
     session.refresh(place)
 
@@ -126,7 +126,7 @@ def add_image_to_stay_log(
     stay = session.get(StayLog, stay_id)
     if not stay:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Stay log not found")
-    
+
     existing_images = session.exec(select(StayLogImage).where(StayLogImage.stay_log_id == stay_id)).all()
     max_order = max([img.display_order for img in existing_images], default=0)
 

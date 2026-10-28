@@ -1,9 +1,10 @@
-import time
 import json
 import logging
-from typing import Any, Callable, Optional, Dict, Tuple
+import time
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Session, select
+from typing import Any, Callable, Dict, Tuple
+
+from sqlmodel import Field, Session, SQLModel
 
 logger = logging.getLogger("app.core.cache")
 

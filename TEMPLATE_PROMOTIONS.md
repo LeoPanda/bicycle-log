@@ -18,24 +18,20 @@
 
 | 提案ID | 参照Wikiパターン | 対象スキル / ルール | 提案タイトル | 複合検証 (Gating) | ユーザー承認 | 判定日 |
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
-| - | - | - | 提案待機中 | - | - | - |
+| PROP-001 | PAT-SYS-007 | skeletons/profile-a/, rules/AGENTS.md | CI・スケルトン・シナリオテスト整合性担保規約 | ✅ PASS (検証完了) | 待機中 | 2026-10-28 |
 
 ---
 
 ## 3. 提案詳細および最小パッチ概要
 
-<!--
-### [PROP-001]: [タイトル]
-- **参照WikiパターンID**: PAT-CAT-xxx (./wiki/patterns/universal/PAT-CAT-xxx.md)
-- **関連エージェント/スキル**: [conductor / architect / backend-engineer / ui-designer / qa-engineer]
+### [PROP-001]: CI・スケルトン・シナリオテスト整合性担保規約
+- **原票ID**: `CLAIM-20261028-bicycle-log-PAT-SYS-007` (./promotions/CLAIM-20261028-bicycle-log-PAT-SYS-007.md)
+- **参照WikiパターンID**: PAT-SYS-007 (./wiki/patterns/universal/PAT-SYS-007_ci_skeleton_consistency.md)
+- **関連エージェント/スキル**: `conductor` / `qa-engineer` / `dev-phase1-setup`
 - **改訂動機・背景**:
-  - [なぜこのルール・スキルの修正が必要か]
+  - GitHub Actions CI において、FastAPI標準の `Depends` 構文が Ruff `B008` で誤認検知される問題、既存プロジェクト改訂時に `package-lock.json` が除外される問題、およびシナリオテストの実行ディレクトリ依存エラーを根絶するため。
 - **変更内容概要**:
-  - [変更対象ファイルおよび変更点]
-- **PURPOSE.md 記録内容**:
-  - [skills/{skill}/PURPOSE.md へ記載した内容]
-- **出力パッチ**:
-  - `./promotions/{target}.patch`
-- **複合検証ゲート (Gating) 結果**:
-  - 静的解析: PASS / ドキュメント整合性: PASS / シナリオテスト: PASS / トークン効率: PASS
--->
+  - `skeletons/profile-a/backend/pyproject.toml`: FastAPI 適合ルール (`B008`, `E402`, `per-file-ignores`) の標準装備
+  - `skeletons/common/.github/workflows/ci.yml`: パス基準化および実スクリプト適合
+  - `dev-phase1-setup`: ブラウンフィールド改訂時の `pyproject.toml` 欠落自動補完および `.gitignore` のロックファイル保護
+- **Central Knowledge Hub 状態**: `~/.gemini/knowledge-hub/inbox/` へ投函完了 (INBOX_PENDING)

@@ -1,8 +1,10 @@
 from typing import List
+
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.bike import BikeCreate, BikeUpdate, BikeResponse
+from app.schemas.bike import BikeCreate, BikeResponse, BikeUpdate
 from app.services import bike_service
 
 router = APIRouter(prefix="/api/bikes", tags=["bikes"])

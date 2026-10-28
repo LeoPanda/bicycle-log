@@ -1,11 +1,16 @@
-from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
+from typing import Optional
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlmodel import Session
+
 from app.core.database import get_session
 from app.schemas.stay_log import (
-    StayLogCreate, StayLogUpdate, StayLogResponse,
-    StayLogImageUpdate, StayLogImageResponse,
-    UpdateStayLogPlaceRequest
+    StayLogCreate,
+    StayLogImageResponse,
+    StayLogImageUpdate,
+    StayLogResponse,
+    StayLogUpdate,
+    UpdateStayLogPlaceRequest,
 )
 from app.services import stay_log_service
 from app.services.image_service import optimize_and_save_image

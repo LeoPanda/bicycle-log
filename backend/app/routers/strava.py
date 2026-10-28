@@ -1,8 +1,10 @@
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.services.strava_service import sync_strava_activities, backfill_activity_endpoints
+from app.services.strava_service import backfill_activity_endpoints, sync_strava_activities
 
 router = APIRouter(prefix="/api/strava", tags=["strava"])
 

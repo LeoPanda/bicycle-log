@@ -1,6 +1,8 @@
 from typing import List
+
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
+
 from app.core.database import get_session
 from app.schemas.tag import TagCreate, TagResponse
 from app.services import tag_service

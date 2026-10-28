@@ -1,22 +1,31 @@
-import os
 import logging
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.core.config import settings
 from app.core.logger import setup_logging
 
 logger = logging.getLogger("app.main")
+from app.core.database import engine, init_db
 from app.core.exceptions import generic_exception_handler
-from app.core.database import init_db, engine
-from app.services.category_service import seed_initial_categories
-
 from app.routers import (
-    internal, bikes, place_categories, places, activities,
-    stay_logs, tags, analytics, strava, routes, search
+    activities,
+    analytics,
+    bikes,
+    internal,
+    place_categories,
+    places,
+    routes,
+    search,
+    stay_logs,
+    strava,
+    tags,
 )
+from app.services.category_service import seed_initial_categories
 
 # Setup JSON logging
 setup_logging()
@@ -70,7 +79,8 @@ def on_startup():
     with Session(engine) as session:
         seed_initial_categories(session)
 
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+
 
 @app.get("/api/health")
 def health_check():

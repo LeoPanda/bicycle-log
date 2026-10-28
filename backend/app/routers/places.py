@@ -1,11 +1,10 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.place import (
-    PlaceCreate, PlaceUpdate, PlaceResponse, PlaceListResponse,
-    OverwritePlaceRequest
-)
+from app.schemas.place import OverwritePlaceRequest, PlaceCreate, PlaceListResponse, PlaceResponse, PlaceUpdate
 from app.services import places_service
 
 router = APIRouter(prefix="/api/places", tags=["places"])

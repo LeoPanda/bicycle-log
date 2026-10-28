@@ -1,7 +1,9 @@
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import NaiveDatetime
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
+
 
 class PlaceBase(SQLModel):
     name: str = Field(nullable=False)

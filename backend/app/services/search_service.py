@@ -1,10 +1,11 @@
-from typing import List
-from sqlmodel import Session, select, or_
-from app.models.place import Place
-from app.models.category import PlaceCategory
-from app.models.route import Route
+from sqlmodel import Session, or_, select
+
 from app.models.activity import Activity
-from app.schemas.search import SearchResponse, PlaceSearchResult, RouteSearchResult
+from app.models.category import PlaceCategory
+from app.models.place import Place
+from app.models.route import Route
+from app.schemas.search import PlaceSearchResult, RouteSearchResult, SearchResponse
+
 
 def search_spots_and_routes_data(session: Session, q: str) -> SearchResponse:
     keyword = q.strip()

@@ -1,9 +1,11 @@
 import logging
 from typing import Optional
+
 from fastapi import Header, HTTPException, status
 from google.auth.transport import requests
 from google.oauth2 import id_token
 from pydantic import BaseModel
+
 from app.core.config import settings
 
 logger = logging.getLogger("app.core.auth")

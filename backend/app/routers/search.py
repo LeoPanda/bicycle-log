@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
+
 from app.core.database import get_session
 from app.schemas.search import SearchResponse
 from app.services import search_service

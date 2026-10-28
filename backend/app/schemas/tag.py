@@ -1,6 +1,7 @@
-from typing import Optional
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
+
 
 class TagBase(BaseModel):
     name: str

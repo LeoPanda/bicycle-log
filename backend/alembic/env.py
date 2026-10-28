@@ -1,9 +1,11 @@
 import os
 import sys
 from logging.config import fileConfig
+
 from sqlalchemy import engine_from_config, pool
-from alembic import context
 from sqlmodel import SQLModel
+
+from alembic import context
 
 # Add backend directory to sys.path if not present
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,8 +13,8 @@ backend_dir = os.path.abspath(os.path.join(current_dir, ".."))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-from app.core.config import settings
 import app.models  # noqa: F401 - ensure all models are registered
+from app.core.config import settings
 
 config = context.config
 if config.config_file_name is not None:

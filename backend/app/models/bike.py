@@ -1,7 +1,9 @@
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import NaiveDatetime
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
+
 
 class BikeBase(SQLModel):
     bike_code: str = Field(unique=True, index=True, nullable=False)
@@ -14,7 +16,7 @@ class BikeBase(SQLModel):
 
 class Bike(BikeBase, table=True):
     __tablename__ = "bikes"
-    
+
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: NaiveDatetime = Field(default_factory=datetime.now)
     updated_at: NaiveDatetime = Field(default_factory=datetime.now)

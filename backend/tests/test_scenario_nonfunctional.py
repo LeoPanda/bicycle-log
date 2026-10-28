@@ -2,11 +2,11 @@
 test_scenario_nonfunctional.py - Non-Functional Requirements Scenario Tests
 Verifies [REQ-NF01] through [REQ-NF08] with normal and negative paths.
 """
-import os
-import sys
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 # Ensure root scripts directory is importable
@@ -23,7 +23,7 @@ def test_nonfunctional_line_limit_guard():
     harness_guard.py の実行による FE 250行 / BE 400行の機械検証
     """
     cmd = [sys.executable, "scripts/harness_guard.py", "--all"]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=str(ROOT_DIR), capture_output=True, text=True)
     assert proc.returncode == 0, f"Harness guard blocked:\n{proc.stdout}\n{proc.stderr}"
 
 
@@ -52,7 +52,7 @@ def test_nonfunctional_traceability_coverage():
     traceability_checker.py --mode design の PASS 検証
     """
     cmd = [sys.executable, "scripts/traceability_checker.py", "--mode", "design"]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=str(ROOT_DIR), capture_output=True, text=True)
     assert proc.returncode == 0, f"Traceability design check failed:\n{proc.stdout}\n{proc.stderr}"
 
 
@@ -75,7 +75,7 @@ def test_nonfunctional_browser_sensor_audit():
     [REQ-NF03] ブラウザ感覚センサー (WCAG AA & エラーゼロ) (正常系)
     ビルド済み index.html の存在と基本 DOM 構造の検証
     """
-    dist_index = Path("backend/static/index.html")
+    dist_index = ROOT_DIR / "backend/static/index.html"
     assert dist_index.is_file()
     html_content = dist_index.read_text(encoding="utf-8")
     assert '<div id="root">' in html_content
@@ -87,7 +87,7 @@ def test_nonfunctional_browser_sensor_console_error():
     @test_type: negative
     HTMLビルド成果物の欠落・不整合検出エラーハンドリング
     """
-    missing_file = Path("backend/static/non_existent.html")
+    missing_file = ROOT_DIR / "backend/static/non_existent.html"
     assert not missing_file.exists()
 
 
@@ -177,9 +177,9 @@ def test_nonfunctional_mock_control_adapter_present():
     [REQ-NF07] モック制御アダプター層 (MSW 集約 & 実結合フォールバック禁止) (正常系)
     MSW 設定ファイルおよび Service Worker ファイルの配備検証
     """
-    assert Path("frontend/src/mocks/handlers.ts").is_file()
-    assert Path("frontend/src/mocks/browser.ts").is_file()
-    assert Path("frontend/public/mockServiceWorker.js").is_file()
+    assert (ROOT_DIR / "frontend/src/mocks/handlers.ts").is_file()
+    assert (ROOT_DIR / "frontend/src/mocks/browser.ts").is_file()
+    assert (ROOT_DIR / "frontend/public/mockServiceWorker.js").is_file()
 
 
 def test_nonfunctional_mock_control_fallback_rejection():
@@ -206,7 +206,7 @@ def test_nonfunctional_grand_design_tokens():
     [REQ-NF08] 画面グランドデザイン (4px/8px グリッド & 明暗ペア & デイライト視認性) (正常系)
     Tailwind CSS 設定ファイルおよびデザイントークンの配備検証
     """
-    assert Path("frontend/tailwind.config.js").is_file()
+    assert (ROOT_DIR / "frontend/tailwind.config.js").is_file()
 
 
 def test_nonfunctional_grand_design_contrast_warning_error():

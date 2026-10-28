@@ -1,10 +1,10 @@
-from typing import Optional, Dict, Any
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.activity import (
-    ActivityCreate, ActivityUpdate, ActivityResponse, ActivityListResponse
-)
+from app.schemas.activity import ActivityCreate, ActivityListResponse, ActivityResponse, ActivityUpdate
 from app.services import activity_service
 
 router = APIRouter(prefix="/api/activities", tags=["activities"])

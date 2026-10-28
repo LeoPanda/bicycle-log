@@ -1,9 +1,11 @@
-import os
 import logging
+import os
 import subprocess
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlmodel import Session, text
+
 from app.core.config import settings
 from app.core.database import get_session
 from app.schemas.internal import LogLevelRequest

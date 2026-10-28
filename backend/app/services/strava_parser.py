@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from sqlmodel import Session, select
+
 from app.models.activity import Activity
 from app.models.stay_log import StayLog
-from app.services.route_service import decode_polyline
 from app.services.places_service import get_or_create_place_for_stop
+from app.services.route_service import decode_polyline
 
 logger = logging.getLogger("app.services.strava_parser")
 

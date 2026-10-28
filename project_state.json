@@ -8,10 +8,10 @@
     "execution_mode": "GLOBAL_PLUGIN",
     "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
     "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
-    "current_branch": "feature",
-    "updated_at": "2026-10-28T09:52:47.563104+09:00",
+    "current_branch": "revision/REV-20261028-03",
+    "updated_at": "2026-10-28T12:58:58.210215+09:00",
     "updated_by": "conductor",
-    "md_checksum": "sha256:153b0ba1131acf9d57ab7594b63a948a81bb396a94d0398715b8cd20bc59f34e"
+    "md_checksum": "sha256:cc3d49ad5bb31b16dfcf826bc8aa4fa1584424de978b491797e744a544167f21"
   },
   "current_status": "PRODUCTION_ACTIVE",
   "phases": {
@@ -300,6 +300,30 @@
         "started_at": "2026-10-28T09:52:18.612362+09:00",
         "completed_at": "2026-10-28T09:52:43.667871+09:00",
         "branch": "feature"
+      },
+      {
+        "id": "REV-20261028-01",
+        "title": "機能改訂",
+        "status": "COMPLETED",
+        "started_at": "2026-10-28T12:32:22.399484+09:00",
+        "completed_at": "2026-10-28T12:41:26.546317+09:00",
+        "branch": "revision/REV-20261028-01"
+      },
+      {
+        "id": "REV-20261028-02",
+        "title": "機能改訂",
+        "status": "COMPLETED",
+        "started_at": "2026-10-28T12:49:25.459140+09:00",
+        "completed_at": "2026-10-28T12:50:37.506976+09:00",
+        "branch": "revision/REV-20261028-02"
+      },
+      {
+        "id": "REV-20261028-03",
+        "title": "機能改訂",
+        "status": "COMPLETED",
+        "started_at": "2026-10-28T12:56:37.334400+09:00",
+        "completed_at": "2026-10-28T12:58:58.209533+09:00",
+        "branch": "revision/REV-20261028-03"
       }
     ]
   },

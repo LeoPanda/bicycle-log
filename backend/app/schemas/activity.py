@@ -1,7 +1,8 @@
-from typing import Optional, List, Any
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict
-from app.schemas.stay_log import StayLogResponse
+
 
 class ActivityBase(BaseModel):
     name: str

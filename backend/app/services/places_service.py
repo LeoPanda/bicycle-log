@@ -1,20 +1,21 @@
-import uuid
 import logging
-from typing import Optional, List, Dict, Any
+import uuid
 from datetime import datetime
-from sqlmodel import Session, select, or_, func
+from typing import Any, Dict, List, Optional
+
 from fastapi import HTTPException, status
-from app.models.place import Place
-from app.models.category import PlaceCategory
-from app.models.stay_log import StayLog, StayLogImage
+from sqlmodel import Session, func, or_, select
+
 from app.models.activity import Activity
-from app.schemas.place import PlaceCreate, PlaceUpdate, OverwritePlaceRequest
-from app.services.stop_detection import haversine_distance
+from app.models.category import PlaceCategory
+from app.models.place import Place
+from app.models.stay_log import StayLog, StayLogImage
+from app.schemas.place import OverwritePlaceRequest, PlaceCreate, PlaceUpdate
 from app.services.google_places_client import (
     fetch_nearby_place_from_google,
     search_google_places_api,
-    map_google_types_to_category
 )
+from app.services.stop_detection import haversine_distance
 
 logger = logging.getLogger("app.services.places")
 

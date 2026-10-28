@@ -1,29 +1,30 @@
 import logging
-import httpx
 from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+import httpx
 from fastapi import HTTPException, status
-from sqlmodel import Session, select, or_
+from sqlmodel import Session, or_, select
 
 from app.core.config import settings
 from app.models.activity import Activity
 from app.models.bike import Bike
 from app.models.place import Place
-from app.models.stay_log import StayLog
 from app.models.route import Route
-from app.services.stop_detection import detect_stops
+from app.models.stay_log import StayLog
 from app.services.places_service import get_or_create_place_for_stop
 from app.services.route_service import calculate_polyline_similarity
+from app.services.stop_detection import detect_stops
 from app.services.strava_client import (
-    get_strava_access_token,
     fetch_athlete_activities,
-    fetch_strava_streams,
+    fetch_strava_activity_detail,
     fetch_strava_gear,
-    fetch_strava_activity_detail
+    fetch_strava_streams,
+    get_strava_access_token,
 )
 from app.services.strava_parser import (
+    backfill_activity_endpoints,  # noqa: F401 - re-exported for routers.strava
     process_activity_endpoints,
-    backfill_activity_endpoints
 )
 
 logger = logging.getLogger("app.services.strava")
@@ -175,7 +176,7 @@ def sync_strava_activities(
                 streams = fetch_strava_streams(client, access_token, act_id)
                 latlng_stream = streams.get("latlng", {}).get("data", [])
                 time_stream = streams.get("time", {}).get("data", [])
-                
+
                 if latlng_stream and time_stream:
                     detected = detect_stops(latlng_stream, time_stream, start_date)
                     for stop in detected:

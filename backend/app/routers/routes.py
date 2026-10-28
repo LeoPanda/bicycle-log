@@ -1,8 +1,8 @@
-from typing import List, Dict, Any
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.route import RouteUpdate, RouteResponse
+from app.schemas.route import RouteResponse, RouteUpdate
 from app.services import route_service
 
 router = APIRouter(prefix="/api/routes", tags=["routes"])

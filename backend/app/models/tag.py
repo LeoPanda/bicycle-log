@@ -1,7 +1,9 @@
-from typing import Optional, List
 from datetime import datetime
+from typing import Optional
+
 from pydantic import NaiveDatetime
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, SQLModel
+
 
 class ActivityTag(SQLModel, table=True):
     __tablename__ = "activity_tags"

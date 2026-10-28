@@ -1,8 +1,10 @@
-import os
 import logging
+import os
+
+from alembic.config import Config
 from sqlalchemy import create_engine, event
 from sqlmodel import Session
-from alembic.config import Config
+
 from alembic import command
 from app.core.config import settings
 

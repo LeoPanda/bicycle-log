@@ -1,12 +1,11 @@
-import os
-from typing import Optional
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "bicycle-log"
-    VERSION: str = "2.0.0"
-    APP_VERSION: str = "2.0.0"
+    VERSION: str = "2.1.0"
+    APP_VERSION: str = "2.1.0"
     ENV: str = "development"
     DEBUG: bool = True
     ALLOW_LOCAL_AUTH_BYPASS: bool = True
@@ -15,7 +14,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./data/app.db"
     SQL_ECHO: bool = False
     INTERNAL_AI_TOKEN: str = "ai_agent_secret_secure_token_2026"
-    
+
     # Google Cloud IAP Settings
     IAP_AUDIENCE: str = ""
 
@@ -24,7 +23,7 @@ class Settings(BaseSettings):
     STRAVA_CLIENT_SECRET: str = ""
     STRAVA_REFRESH_TOKEN: str = ""
     GOOGLE_PLACES_API_KEY: str = ""
-    
+
     # Storage
     GCS_BUCKET_NAME_IMAGES: str = "bicycle-log-images"
     GCS_LITESTREAM_BACKUP_BUCKET: str = "bicycle-log-litestream"

@@ -1,22 +1,34 @@
-from typing import Optional, List, Dict, Any
 from datetime import datetime
-from sqlmodel import Session, select, func
+from typing import Any, Dict, Optional
+
+from sqlmodel import Session, select
+
 from app.models.activity import Activity
-from app.models.place import Place
-from app.models.category import PlaceCategory
-from app.models.stay_log import StayLog
 from app.models.bike import Bike
+from app.models.category import PlaceCategory
+from app.models.place import Place
 from app.models.route import Route
+from app.models.stay_log import StayLog
 from app.schemas.analytics import (
-    DashboardResponse, DashboardSummary, RecentActivityItem, SpotRankingItem, RouteRankingItem,
-    MetricsResponse, MetricItem,
-    HeatmapResponse, HeatmapPolyline, HeatmapRoute, HeatmapMarker, HeatmapRouteActivity
+    DashboardResponse,
+    DashboardSummary,
+    HeatmapMarker,
+    HeatmapPolyline,
+    HeatmapResponse,
+    HeatmapRoute,
+    HeatmapRouteActivity,
+    MetricItem,
+    MetricsResponse,
+    RecentActivityItem,
+    RouteRankingItem,
+    SpotRankingItem,
 )
+
 
 def get_dashboard_summary_data(session: Session) -> DashboardResponse:
     activities = session.exec(select(Activity)).all()
     places = session.exec(select(Place)).all()
-    
+
     total_distance_m = sum([a.distance for a in activities])
     total_elevation_m = sum([a.total_elevation_gain for a in activities])
     total_ride_count = len(activities)
@@ -102,7 +114,7 @@ def get_activity_metrics_data(
     statement = select(Activity)
     if bike_id is not None:
         statement = statement.where(Activity.bike_id == bike_id)
-        
+
     activities = session.exec(statement.order_by(Activity.start_date.asc())).all()
 
     grouped: Dict[str, Dict[str, float]] = {}
@@ -199,7 +211,7 @@ def get_heatmap_data_service(
         if selected_year != "all":
             target_y = int(selected_year)
             linked_acts = [la for la in linked_acts if la.start_date and la.start_date.year == target_y]
-        
+
         acts_summary = []
         for la in linked_acts:
             acts_summary.append(

@@ -3,9 +3,8 @@ test_scenario_functional.py - Functional Requirements Scenario Tests
 Verifies [REQ-F01] through [REQ-F07] with normal and negative paths.
 """
 import io
-import pytest
-from fastapi.testclient import TestClient
 
+from fastapi.testclient import TestClient
 
 # --- [REQ-F01] 自転車・ギア管理機能 ---
 
@@ -86,8 +85,9 @@ def test_scenario_strava_rate_limit_error(client: TestClient, monkeypatch):
     @test_type: negative
     Strava API のレート制限 (HTTP 429) または認証エラー時のハンドリング
     """
-    from app.routers import strava
     from fastapi import HTTPException
+
+    from app.routers import strava
 
     def mock_sync_fail(*args, **kwargs):
         raise HTTPException(status_code=429, detail="Strava rate limit exceeded")

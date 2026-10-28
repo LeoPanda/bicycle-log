@@ -1,4 +1,3 @@
-import pytest
 
 def test_bike_crud(client):
     # 1. Create

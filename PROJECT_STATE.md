@@ -10,8 +10,8 @@
 - **EXECUTION_MODE**: GLOBAL_PLUGIN
 - **TEMPLATE_SOURCE**: ~/.gemini/config/plugins/system-dev-pipeline
 - **Knowledge Hub 連携状態**: SYNCED (Immutable Core v2.6.0 + Local Overlay)
-- **現在の作業ブランチ**: feature
-- **最終更新日時**: 2026-10-28T09:52:47.563104+09:00
+- **現在の作業ブランチ**: revision/REV-20261028-03
+- **最終更新日時**: 2026-10-28T12:58:58.210215+09:00
 - **最終更新者**: 👑 プロジェクトコンダクター (conductor)
 
 ---
@@ -78,6 +78,9 @@
 | 1.2.001 | v1.2 | 1 | 完了 | conductor | 発着点滞在スポット追加、バージョン表記、検索窓、ヒートマップ拡張 | 2026-09-30 |
 | 1.2.002 | v1.2 | 1 | 完了 | conductor | Cloud Run本番デプロイ（既存DB維持） | 2026-10-03 |
 | 2.0.001 | - | - | COMPLETED | conductor | 機能改訂 | 2026-10-28T09:52:43.667871+09:00 |
+| REV-20261028-01 | - | - | COMPLETED | conductor | 機能改訂 | 2026-10-28T12:41:26.546317+09:00 |
+| REV-20261028-02 | - | - | COMPLETED | conductor | 機能改訂 | 2026-10-28T12:50:37.506976+09:00 |
+| REV-20261028-03 | - | - | COMPLETED | conductor | 機能改訂 | 2026-10-28T12:58:58.209533+09:00 |
 
 ---
 

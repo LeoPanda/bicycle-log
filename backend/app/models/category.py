@@ -1,7 +1,9 @@
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import NaiveDatetime
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship, SQLModel
+
 
 class PlaceCategoryBase(SQLModel):
     name: str = Field(unique=True, index=True, nullable=False)

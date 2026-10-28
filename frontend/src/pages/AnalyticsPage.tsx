@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { RefreshCw, Filter } from 'lucide-react';
 import { useAnalytics, HeatmapRoute } from '../hooks/useAnalytics';
-import { MonthlyDistanceChart } from '../components/analytics/MonthlyDistanceChart';
-import { RideSummaryTable } from '../components/analytics/RideSummaryTable';
+import { MetricCardsSection } from '../components/analytics/MetricCardsSection';
+import { YearlyMetricsProgressChart } from '../components/analytics/YearlyMetricsProgressChart';
 import { HeatmapMapSection } from '../components/analytics/HeatmapMapSection';
+import { HeatmapRoutesTable } from '../components/analytics/HeatmapRoutesTable';
 import { RouteDetailModal } from '../components/RouteDetailModal';
 
 export const AnalyticsPage: React.FC = () => {
@@ -37,7 +38,7 @@ export const AnalyticsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Range Filters */}
+      {/* Top Header & Range / Bike Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
         <div>
           <h1 className="text-2xl font-black text-slate-900 dark:text-white">アクティビティ分析</h1>
@@ -45,7 +46,6 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Time Range Filter */}
           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
             {[
               { id: 'annual', label: '年別' },
@@ -66,7 +66,6 @@ export const AnalyticsPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Bike Filter */}
           <div className="flex items-center gap-1.5">
             <Filter className="w-4 h-4 text-slate-400" />
             <select
@@ -89,14 +88,17 @@ export const AnalyticsPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <MonthlyDistanceChart
+          {/* Top 5 Metric Cards */}
+          <MetricCardsSection metrics={metrics} />
+
+          {/* Yearly Progress Bars Chart (Design as requested) */}
+          <YearlyMetricsProgressChart
             metrics={metrics}
             selectedMetricTab={selectedMetricTab}
             setSelectedMetricTab={setSelectedMetricTab}
           />
 
-          <RideSummaryTable metrics={metrics} />
-
+          {/* Heatmap & Spots Map Section */}
           <HeatmapMapSection
             heatmapData={heatmapData}
             availableYears={availableYears}
@@ -110,13 +112,21 @@ export const AnalyticsPage: React.FC = () => {
             setIsFullscreenMap={setIsFullscreenMap}
             onSelectRoute={handleSelectRoute}
           />
+
+          {/* Heatmap Routes List (Bottom of Map) */}
+          <HeatmapRoutesTable
+            routes={heatmapData.routes}
+            onSelectRoute={handleSelectRoute}
+          />
         </div>
       )}
 
+      {/* Route Detail Modal */}
       {viewRouteId && (
         <RouteDetailModal
           routeId={viewRouteId}
           onClose={() => setViewRouteId(null)}
+          onUpdated={() => handleYearChange(selectedYear || '')}
         />
       )}
     </div>

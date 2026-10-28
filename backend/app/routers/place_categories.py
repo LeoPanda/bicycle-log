@@ -1,8 +1,10 @@
 from typing import List
+
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.category import PlaceCategoryCreate, PlaceCategoryUpdate, PlaceCategoryResponse
+from app.schemas.category import PlaceCategoryCreate, PlaceCategoryResponse, PlaceCategoryUpdate
 from app.services import category_service
 
 router = APIRouter(prefix="/api/place-categories", tags=["place-categories"])

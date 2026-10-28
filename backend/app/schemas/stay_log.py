@@ -1,6 +1,8 @@
-from typing import Optional, List, Any
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict
+
 
 class StayLogImageBase(BaseModel):
     image_url: str

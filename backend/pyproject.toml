@@ -1,0 +1,41 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "B008",   # do not perform function calls in argument defaults (FastAPI Depends)
+    "B904",   # raise ... from err (FastAPI HTTPExceptions)
+    "E402",   # module level import not at top of file (sys.path insertion in alembic/tests/main)
+    "E501",   # line too long (handled by formatter)
+    "UP006",  # typing.List compatibility
+    "UP035",  # typing compatibility
+    "UP045",  # Optional vs | None (gradual transition)
+    "UP007",  # Union vs |
+    "UP017",  # datetime.timezone.utc
+    "W291",   # trailing whitespace
+    "W293",   # blank line whitespace
+]
+
+[tool.ruff.lint.per-file-ignores]
+# SQLModel relationship forward references (e.g. Optional["Bike"])
+"app/models/*.py" = ["F821"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = false
+disable_error_code = ["attr-defined", "name-defined", "assignment", "arg-type", "union-attr", "call-overload", "return-value", "dict-item", "index"]

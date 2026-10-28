@@ -1,10 +1,13 @@
-from typing import List, Optional
 from datetime import datetime
-from sqlmodel import Session, select
+from typing import List
+
 from fastapi import HTTPException, status
-from app.models.bike import Bike
+from sqlmodel import Session, select
+
 from app.models.activity import Activity
+from app.models.bike import Bike
 from app.schemas.bike import BikeCreate, BikeUpdate
+
 
 def list_bikes(session: Session) -> List[Bike]:
     return session.exec(select(Bike).order_by(Bike.created_at.desc())).all()
@@ -19,7 +22,7 @@ def create_bike(session: Session, bike_in: BikeCreate) -> Bike:
     existing = session.exec(select(Bike).where(Bike.bike_code == bike_in.bike_code)).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bike code already exists")
-    
+
     bike = Bike.model_validate(bike_in)
     session.add(bike)
     session.commit()
@@ -32,7 +35,7 @@ def update_bike(session: Session, bike_id: int, bike_in: BikeUpdate) -> Bike:
     for key, value in bike_data.items():
         setattr(bike, key, value)
     bike.updated_at = datetime.now()
-    
+
     session.add(bike)
     session.commit()
     session.refresh(bike)

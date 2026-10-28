@@ -1,8 +1,10 @@
 from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
+
 from app.core.database import get_session
-from app.schemas.analytics import DashboardResponse, MetricsResponse, HeatmapResponse
+from app.schemas.analytics import DashboardResponse, HeatmapResponse, MetricsResponse
 from app.services import analytics_service
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])

@@ -1,6 +1,7 @@
 import math
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Tuple
+from typing import Any, Dict, List
+
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Compute distance in meters between two lat/lng coordinates using Haversine formula."""
@@ -46,7 +47,7 @@ def detect_stops(
     while i < n:
         start_pt = latlng_stream[i]
         start_t = time_stream[i]
-        
+
         j = i + 1
         cluster_lats = [start_pt[0]]
         cluster_lngs = [start_pt[1]]
@@ -56,7 +57,7 @@ def detect_stops(
             # Check distance from the initial cluster center / start_pt
             center_lat = sum(cluster_lats) / len(cluster_lats)
             center_lng = sum(cluster_lngs) / len(cluster_lngs)
-            
+
             dist = haversine_distance(center_lat, center_lng, curr_pt[0], curr_pt[1])
             if dist <= radius_meters:
                 cluster_lats.append(curr_pt[0])
@@ -69,7 +70,7 @@ def detect_stops(
         if duration >= min_stay_seconds:
             centroid_lat = sum(cluster_lats) / len(cluster_lats)
             centroid_lng = sum(cluster_lngs) / len(cluster_lngs)
-            
+
             arrived_at = start_date + timedelta(seconds=start_t)
             left_at = start_date + timedelta(seconds=time_stream[j - 1])
 

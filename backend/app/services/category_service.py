@@ -1,10 +1,13 @@
-from typing import List
 from datetime import datetime
-from sqlmodel import Session, select
+from typing import List
+
 from fastapi import HTTPException, status
+from sqlmodel import Session, select
+
 from app.models.category import PlaceCategory
 from app.models.place import Place
 from app.schemas.category import PlaceCategoryCreate, PlaceCategoryUpdate
+
 
 def list_categories(session: Session) -> List[PlaceCategory]:
     return session.exec(select(PlaceCategory).order_by(PlaceCategory.sort_order.asc(), PlaceCategory.id.asc())).all()
@@ -19,7 +22,7 @@ def create_category(session: Session, cat_in: PlaceCategoryCreate) -> PlaceCateg
     existing = session.exec(select(PlaceCategory).where(PlaceCategory.name == cat_in.name)).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Category name already exists")
-    
+
     category = PlaceCategory.model_validate(cat_in)
     session.add(category)
     session.commit()
@@ -32,7 +35,7 @@ def update_category(session: Session, category_id: int, cat_in: PlaceCategoryUpd
     for key, value in cat_data.items():
         setattr(cat, key, value)
     cat.updated_at = datetime.now()
-    
+
     session.add(cat)
     session.commit()
     session.refresh(cat)

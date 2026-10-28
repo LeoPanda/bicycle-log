@@ -1,7 +1,9 @@
 import logging
+from typing import Any, Dict, List, Optional
+
 import httpx
-from typing import List, Dict, Any, Optional
 from fastapi import HTTPException, status
+
 from app.core.config import settings
 
 logger = logging.getLogger("app.services.strava_client")

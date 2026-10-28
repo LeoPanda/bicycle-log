@@ -1,9 +1,11 @@
-import os
-import uuid
 import io
 import logging
-from PIL import Image
+import os
+import uuid
 from typing import BinaryIO, Union
+
+from PIL import Image
+
 from app.core.config import settings
 
 logger = logging.getLogger("app.services.image")
@@ -23,7 +25,7 @@ def optimize_and_save_image(file_obj_or_bytes: Union[BinaryIO, bytes], filename:
     Returns image URL.
     """
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    
+
     if isinstance(file_obj_or_bytes, bytes):
         if not file_obj_or_bytes:
             raise ValueError("アップロードされたファイルが空です。")
@@ -42,7 +44,7 @@ def optimize_and_save_image(file_obj_or_bytes: Union[BinaryIO, bytes], filename:
     except Exception as e:
         logger.warning(f"Failed to identify image file '{filename}': {e}")
         raise ValueError("有効な画像ファイル（JPEG, PNG, WebP, HEIC等）を指定してください。")
-    
+
     # Auto-orient if EXIF orientation exists
     try:
         from PIL import ImageOps
