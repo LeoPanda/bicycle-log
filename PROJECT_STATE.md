@@ -6,12 +6,12 @@
   - 第1層 (定常コア): Universal Core Specifications (Anti-God Component 250行制限 / 型同期 / Pydantic Settings / Aware UTC / CI / 構造化ログ / モック制御 / グランドデザイン) 適用中
   - 第2層 (展開プロファイル): Profile A: クラウド公開 (Cloud-Native Web Service)
 - **モック動作モード (MOCK_MODE)**: ENABLED
-- **現行バージョン**: v2.0.0
+- **現行バージョン**: v2.1.0
 - **EXECUTION_MODE**: GLOBAL_PLUGIN
 - **TEMPLATE_SOURCE**: ~/.gemini/config/plugins/system-dev-pipeline
 - **Knowledge Hub 連携状態**: SYNCED (Immutable Core v2.6.0 + Local Overlay)
-- **現在の作業ブランチ**: revision/REV-20261028-03
-- **最終更新日時**: 2026-10-28T12:58:58.210215+09:00
+- **現在の作業ブランチ**: feature
+- **最終更新日時**: 2026-10-28T13:08:03.073563+09:00
 - **最終更新者**: 👑 プロジェクトコンダクター (conductor)
 
 ---
