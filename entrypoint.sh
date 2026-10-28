@@ -27,6 +27,10 @@ if [ ! -f /app/data/app.db ] || [ ! -s /app/data/app.db ]; then
   fi
 fi
 
+# Alembic マイグレーション実行保証（スキーマ最新化 / フェイルセーフ）
+echo "Running Alembic migrations..."
+alembic upgrade head
+
 # Litestreamの監視下でFastAPI(uvicorn app.main:app)を実行
 if [ -n "$GCS_LITESTREAM_BACKUP_BUCKET" ]; then
   echo "Starting Litestream replication with uvicorn on port ${PORT}..."

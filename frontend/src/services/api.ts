@@ -122,6 +122,35 @@ export const api = {
       `/strava/backfill-endpoints?all_activities=${allActivities}`,
       { method: 'POST' }
     );
+  },
+
+  detectRoutes: () => {
+    return request<{ status: string; detected_routes: number; grouped_activities: number }>(
+      '/routes/detect',
+      { method: 'POST' }
+    );
+  },
+
+  syncStrava: (params?: {
+    limit_months?: number;
+    all_time?: boolean;
+    before_timestamp?: number;
+    after?: number;
+    before?: number;
+  }) => {
+    let url = '/strava/sync';
+    const query = new URLSearchParams();
+    if (params?.limit_months) query.append('limit_months', String(params.limit_months));
+    if (params?.all_time) query.append('all_time', 'true');
+    if (params?.before_timestamp) query.append('before_timestamp', String(params.before_timestamp));
+    if (params?.after) query.append('after', String(params.after));
+    if (params?.before) query.append('before', String(params.before));
+    const qs = query.toString();
+    if (qs) url += `?${qs}`;
+    return request<{ synced_activities: number; detected_stops: number; created_places: number }>(
+      url,
+      { method: 'POST' }
+    );
   }
 };
 

@@ -11,9 +11,7 @@ from app.core.logger import setup_logging
 logger = logging.getLogger("app.main")
 from app.core.exceptions import generic_exception_handler
 from app.core.database import init_db, engine
-
-from app.models.category import PlaceCategory
-from app.models.bike import Bike
+from app.services.category_service import seed_initial_categories
 
 from app.routers import (
     internal, bikes, place_categories, places, activities,
@@ -69,52 +67,8 @@ if os.path.exists(production_static_dir):
 @app.on_event("startup")
 def on_startup():
     init_db()
-    
-    # Seed / Sync initial categories if empty or missing
     with Session(engine) as session:
-        default_categories = [
-            ("宿泊施設", "ホテル・旅館・ゲストハウス等", "hotel", 10),
-            ("カフェ", "カフェ・喫茶店・ベーカリー", "coffee", 20),
-            ("レストラン", "レストラン・飲食店・食堂", "utensils", 30),
-            ("コンビニ", "コンビニエンスストア・スーパー", "store", 40),
-            ("公園", "公園・緑地・キャンプ場", "trees", 50),
-            ("映画館", "映画館・シネマ", "film", 60),
-            ("博物館・美術館", "博物館・美術館・文化施設", "landmark", 70),
-            ("寺社・仏閣", "神社・寺院・教会", "church", 80),
-            ("駅", "鉄道駅・バスターミナル", "train", 90),
-            ("休憩スポット", "道の駅・休憩所・案内所", "coffee", 100),
-            ("その他", "その他の施設・未分類", "map-pin", 110),
-        ]
-
-        existing_cats = {c.name: c for c in session.exec(select(PlaceCategory)).all()}
-
-        # Migration mapping for old category names if present
-        rename_map = {
-            "寺社仏閣": "寺社・仏閣",
-            "博物館": "博物館・美術館",
-            "道の駅": "休憩スポット",
-            "温泉": "休憩スポット",
-        }
-        for old_name, new_name in rename_map.items():
-            if old_name in existing_cats and new_name not in existing_cats:
-                cat = existing_cats[old_name]
-                cat.name = new_name
-                session.add(cat)
-                session.commit()
-                session.refresh(cat)
-                existing_cats[new_name] = cat
-                del existing_cats[old_name]
-
-        for name, desc, icon, sort_order in default_categories:
-            if name not in existing_cats:
-                cat = PlaceCategory(name=name, description=desc, icon=icon, sort_order=sort_order)
-                session.add(cat)
-            else:
-                cat = existing_cats[name]
-                if getattr(cat, "sort_order", None) is None or cat.sort_order == 100:
-                    cat.sort_order = sort_order
-                    session.add(cat)
-        session.commit()
+        seed_initial_categories(session)
 
 from fastapi.responses import HTMLResponse, FileResponse
 

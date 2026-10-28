@@ -1,13 +1,14 @@
 import os
 import logging
+import subprocess
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Header, status
-from pydantic import BaseModel
+from sqlmodel import Session, text
 from app.core.config import settings
+from app.core.database import get_session
+from app.schemas.internal import LogLevelRequest
 
-router = APIRouter(prefix="/api")
-
-class LogLevelRequest(BaseModel):
-    level: str  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+router = APIRouter(prefix="/api/internal", tags=["internal"])
 
 def verify_ai_token(x_ai_token: str = Header(None)):
     env_token = os.environ.get("INTERNAL_AI_TOKEN", settings.INTERNAL_AI_TOKEN)
@@ -18,7 +19,7 @@ def verify_ai_token(x_ai_token: str = Header(None)):
         )
     return True
 
-@router.post("/internal/logger/level", dependencies=[Depends(verify_ai_token)])
+@router.post("/logger/level", dependencies=[Depends(verify_ai_token)])
 def set_dynamic_log_level(payload: LogLevelRequest):
     target_level = payload.level.upper()
     numeric_level = getattr(logging, target_level, None)
@@ -26,13 +27,58 @@ def set_dynamic_log_level(payload: LogLevelRequest):
     if numeric_level is None:
         raise HTTPException(status_code=400, detail=f"Invalid log level: {payload.level}")
 
-    # オンメモリでルートロガーのレベルを動的に書き換え
     logging.getLogger().setLevel(numeric_level)
 
-    # 設定が変更されたことを明示するためにINFOログを出力
     logging.getLogger("app.core.logger").info(
         f"ログレベルが動的に変更されました: {target_level}",
         extra={"log_id": "system-dynamic-level-change"}
     )
 
     return {"status": "success", "current_level": target_level}
+
+@router.get("/health")
+def internal_health_check(session: Session = Depends(get_session)):
+    try:
+        session.exec(text("SELECT 1"))
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "database": {
+                "connected": True,
+                "engine": "sqlite",
+            },
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Database health check failed: {str(e)}",
+        )
+
+@router.get("/litestream/status")
+def litestream_status():
+    bucket = getattr(settings, "GCS_LITESTREAM_BACKUP_BUCKET", "")
+    if not bucket:
+        return {
+            "status": "disabled",
+            "message": "GCS_LITESTREAM_BACKUP_BUCKET is not set.",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+    try:
+        res = subprocess.run(
+            ["litestream", "replications", "-config", "/etc/litestream.yml"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        return {
+            "status": "active" if res.returncode == 0 else "degraded",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "output": res.stdout.strip(),
+        }
+    except Exception as e:
+        return {
+            "status": "unknown",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "error": str(e),
+        }

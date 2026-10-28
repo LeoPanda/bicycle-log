@@ -5,6 +5,7 @@ from app.models.activity import Activity, ActivityCreate, ActivityUpdate
 from app.models.stay_log import StayLog, StayLogCreate, StayLogUpdate, StayLogImage, StayLogImageCreate
 from app.models.tag import Tag, TagCreate, ActivityTag, PlaceTag
 from app.models.route import Route, RouteCreate, RouteUpdate
+from app.core.cache import ApiCache
 
 __all__ = [
     "Bike", "BikeCreate", "BikeUpdate",
@@ -13,5 +14,6 @@ __all__ = [
     "Activity", "ActivityCreate", "ActivityUpdate",
     "StayLog", "StayLogCreate", "StayLogUpdate", "StayLogImage", "StayLogImageCreate",
     "Tag", "TagCreate", "ActivityTag", "PlaceTag",
-    "Route", "RouteCreate", "RouteUpdate"
+    "Route", "RouteCreate", "RouteUpdate",
+    "ApiCache"
 ]

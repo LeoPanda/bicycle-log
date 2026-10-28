@@ -1,10 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation as RouteIcon, X, ExternalLink, RefreshCw, Pencil, Check } from 'lucide-react';
-import L from 'leaflet';
-import { api } from '../services/api';
-import { RouteMaster } from '../types';
-import { decodePolyline } from '../utils/polyline';
+import { useRouteDetail } from '../hooks/useRouteDetail';
 
 interface RouteDetailModalProps {
   routeId: number | null;
@@ -13,110 +10,20 @@ interface RouteDetailModalProps {
 }
 
 export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ routeId, onClose, onUpdated }) => {
-  const [routeDetail, setRouteDetail] = useState<RouteMaster | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Inline route name edit states
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editingNameValue, setEditingNameValue] = useState('');
-  const [savingName, setSavingName] = useState(false);
-
-  const routeMapRef = useRef<HTMLDivElement>(null);
-  const routeMapInstanceRef = useRef<L.Map | null>(null);
-
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!routeId) {
-      setRouteDetail(null);
-      setIsEditingName(false);
-      return;
-    }
-
-    setLoading(true);
-    setErrorMessage(null);
-    setIsEditingName(false);
-    api.get<RouteMaster>(`/routes/${routeId}`)
-      .then((res) => {
-        setRouteDetail(res);
-      })
-      .catch((err: any) => {
-        setErrorMessage(err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [routeId]);
-
-  useEffect(() => {
-    if (!routeDetail || !routeMapRef.current) return;
-
-    if (routeMapInstanceRef.current) {
-      routeMapInstanceRef.current.remove();
-      routeMapInstanceRef.current = null;
-    }
-
-    if ((routeMapRef.current as any)._leaflet_id) {
-      (routeMapRef.current as any)._leaflet_id = null;
-    }
-
-    const coords = decodePolyline(routeDetail.summary_polyline || '');
-    if (coords.length === 0) return;
-
-    const map = L.map(routeMapRef.current).setView(coords[0], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap',
-    }).addTo(map);
-
-    const polyline = L.polyline(coords, {
-      color: '#0284c7',
-      weight: 5,
-      opacity: 0.9,
-    }).addTo(map);
-
-    map.fitBounds(polyline.getBounds(), { padding: [20, 20] });
-    routeMapInstanceRef.current = map;
-
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
-
-    return () => {
-      if (routeMapInstanceRef.current) {
-        routeMapInstanceRef.current.remove();
-        routeMapInstanceRef.current = null;
-      }
-    };
-  }, [routeDetail]);
-
-  const handleStartEditName = () => {
-    if (!routeDetail) return;
-    setEditingNameValue(routeDetail.name);
-    setIsEditingName(true);
-  };
-
-  const handleCancelEditName = () => {
-    setIsEditingName(false);
-    setEditingNameValue('');
-  };
-
-  const handleSaveName = async () => {
-    if (!routeDetail || !editingNameValue.trim()) return;
-    setSavingName(true);
-    setErrorMessage(null);
-    try {
-      await api.put(`/routes/${routeDetail.id}`, { name: editingNameValue.trim() });
-      setRouteDetail({ ...routeDetail, name: editingNameValue.trim() });
-      setIsEditingName(false);
-      onUpdated?.();
-    } catch (err: any) {
-      setErrorMessage(err.message);
-    } finally {
-      setSavingName(false);
-    }
-  };
+  const {
+    routeDetail,
+    loading,
+    errorMessage,
+    isEditingName,
+    editingNameValue,
+    setEditingNameValue,
+    savingName,
+    routeMapRef,
+    handleStartEditName,
+    handleCancelEditName,
+    handleSaveName,
+  } = useRouteDetail(routeId, onUpdated);
 
   if (!routeId) return null;
 
@@ -189,7 +96,6 @@ export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ routeId, onC
           </div>
         ) : routeDetail ? (
           <>
-            {/* Polyline Map Preview */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-slate-600 dark:text-slate-400">代表コース Polyline プレビュー</span>
               <div className="w-full h-64 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden relative shadow-inner z-0">
@@ -197,7 +103,6 @@ export const RouteDetailModal: React.FC<RouteDetailModalProps> = ({ routeId, onC
               </div>
             </div>
 
-            {/* Linked Activities List */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">

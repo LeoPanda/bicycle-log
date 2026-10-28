@@ -1,109 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Filter, RefreshCw, Plus, Eye, Pencil, Trash2, MapPin, Activity as ActivityIcon, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { RefreshCw, Eye, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { api } from '../services/api';
-import { Activity, Place, PlaceCategory, Bike } from '../types';
+import { useItemsSearch } from '../hooks/useItemsSearch';
+import { ItemsSearchBar } from '../components/ItemsSearchBar';
 
 export const ItemsPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const activeTab = searchParams.get('tab') === 'places' ? 'places' : 'activities';
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const sortBy = searchParams.get('sort_by') || 'start_date';
-  const sortOrder = searchParams.get('sort_order') || 'desc';
-  const search = searchParams.get('q') || '';
-  const categoryId = searchParams.get('category_id') || '';
-  const bikeId = searchParams.get('bike_id') || '';
-
-  const [searchInput, setSearchInput] = useState(search);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [categories, setCategories] = useState<PlaceCategory[]>([]);
-  const [bikes, setBikes] = useState<Bike[]>([]);
-
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setSearchInput(search);
-  }, [search]);
-
-  useEffect(() => {
-    // Load categories & bikes for filters
-    api.get<PlaceCategory[]>('/place-categories').then(setCategories).catch(console.error);
-    api.get<Bike[]>('/bikes').then(setBikes).catch(console.error);
-  }, []);
-
-  const updateParams = (newParamsObj: Record<string, string | number | undefined | null>) => {
-    const newParams = new URLSearchParams(searchParams);
-    Object.entries(newParamsObj).forEach(([key, val]) => {
-      if (val === undefined || val === null || val === '') {
-        newParams.delete(key);
-      } else {
-        newParams.set(key, String(val));
-      }
-    });
-    setSearchParams(newParams, { replace: true });
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      if (activeTab === 'activities') {
-        const query = new URLSearchParams({
-          page: String(page),
-          per_page: '10',
-          sort_by: sortBy,
-          sort_order: sortOrder,
-          ...(search ? { q: search } : {}),
-          ...(bikeId ? { bike_id: bikeId } : {})
-        });
-        const res: any = await api.get(`/activities?${query.toString()}`);
-        setActivities(res.items);
-        setTotalPages(res.total_pages);
-      } else {
-        const query = new URLSearchParams({
-          page: String(page),
-          per_page: '10',
-          ...(search ? { q: search } : {}),
-          ...(categoryId ? { category_id: categoryId } : {})
-        });
-        const res: any = await api.get(`/places?${query.toString()}`);
-        setPlaces(res.items);
-        setTotalPages(res.total_pages);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [activeTab, page, sortBy, sortOrder, search, categoryId, bikeId]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateParams({ q: searchInput, page: 1 });
-  };
-
-  const handleSort = (colKey: string) => {
-    if (sortBy === colKey) {
-      const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-      updateParams({ sort_by: colKey, sort_order: newOrder, page: 1 });
-    } else {
-      updateParams({ sort_by: colKey, sort_order: 'desc', page: 1 });
-    }
-  };
+  const {
+    activeTab,
+    page,
+    sortBy,
+    sortOrder,
+    searchInput,
+    setSearchInput,
+    categoryId,
+    bikeId,
+    activities,
+    places,
+    categories,
+    bikes,
+    totalPages,
+    loading,
+    updateParams,
+    handleSearchSubmit,
+    handleSort,
+  } = useItemsSearch();
 
   const handleDeleteActivity = async (id: number) => {
     if (!confirm('このアクティビティを削除してもよろしいですか？')) return;
     try {
       await api.delete(`/activities/${id}`);
-      fetchData();
+      window.location.reload();
     } catch (err: any) {
       alert(`Delete failed: ${err.message}`);
     }
@@ -113,7 +41,7 @@ export const ItemsPage: React.FC = () => {
     if (!confirm('この滞在スポットを削除してもよろしいですか？')) return;
     try {
       await api.delete(`/places/${id}`);
-      fetchData();
+      window.location.reload();
     } catch (err: any) {
       alert(`Delete failed: ${err.message}`);
     }
@@ -142,103 +70,30 @@ export const ItemsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-700">
-        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-          <button
-            onClick={() => {
-              updateParams({ tab: 'activities', page: 1 });
-            }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-sm transition ${
-              activeTab === 'activities'
-                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-            }`}
-          >
-            <ActivityIcon className="w-4 h-4" />
-            アクティビティ一覧
-          </button>
-          <button
-            onClick={() => {
-              updateParams({ tab: 'places', page: 1 });
-            }}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-sm transition ${
-              activeTab === 'places'
-                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-            }`}
-          >
-            <MapPin className="w-4 h-4" />
-            滞在スポット一覧
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => api.post('/strava/sync').then(fetchData)}
-            title="Sync Strava"
-            className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-          >
-            <RefreshCw className="w-4 h-4 text-orange-500" />
-            Strava同期
-          </button>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">アイテム一覧管理</h2>
+        <button
+          onClick={() => api.post('/strava/sync').then(() => window.location.reload())}
+          title="Sync Strava"
+          className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+        >
+          <RefreshCw className="w-4 h-4 text-orange-500" />
+          Strava同期
+        </button>
       </div>
 
-      {/* Filter & Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="名称・住所・キーワードで絞り込み検索..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+      <ItemsSearchBar
+        activeTab={activeTab}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+        handleSearchSubmit={handleSearchSubmit}
+        updateParams={updateParams}
+        categories={categories}
+        categoryId={categoryId}
+        bikes={bikes}
+        bikeId={bikeId}
+      />
 
-        {activeTab === 'places' && (
-          <select
-            value={categoryId}
-            onChange={(e) => updateParams({ category_id: e.target.value, page: 1 })}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">すべてのカテゴリ</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {activeTab === 'activities' && (
-          <select
-            value={bikeId}
-            onChange={(e) => updateParams({ bike_id: e.target.value, page: 1 })}
-            className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">すべての使用自転車</option>
-            {bikes.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        )}
-
-        <button
-          type="submit"
-          title="Search"
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm transition flex items-center justify-center gap-2"
-        >
-          <Search className="w-4 h-4" />
-          検索
-        </button>
-      </form>
-
-      {/* Data Table */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
@@ -341,7 +196,6 @@ export const ItemsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Pagination */}
           <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
             <span className="text-xs text-slate-500">
               Page {page} of {totalPages}

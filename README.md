@@ -246,20 +246,19 @@ cp -r dist/* ../backend/static/
 
 ## 📚 ドキュメント一覧
 
-詳細な仕様および設計については、`docs/` 配下の各ドキュメントを参照してください。
+詳細な仕様および設計については、`docs/設計書/Current/` 配下の各ドキュメントを参照してください。
 
-- [要件定義書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/要件定義書.md): システムの全体目的、機能要件、非機能要件
-- [技術要件定義書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/技術要件定義書.md): 技術スタック、外部連携仕様、セキュリティ方針
-- [画面仕様書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/画面仕様書.md): 各画面のレイアウト、コンポーネント構成、インタラクション
-- [バックエンドAPI仕様書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/バックエンドAPI仕様書.md): RESTful API エンドポイント、リクエスト/レスポンス仕様
-- [テーブルスキーマ定義書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/テーブルスキーマ定義書.md): SQLite テーブル定義、リレーション、インデックス
-- [ビジネスロジック仕様書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/ビジネスロジック仕様書.md): 滞在検知アルゴリズム、定番ルート類似度判定ロジック
-- [本番適用作業手順書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/本番適用作業手順書.md): Google Cloud Run / IAP / Secret Manager 本番デプロイ手順
-- [APIキー安全管理・一元化設計書](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/docs/APIキー安全管理・一元化設計書.md): シークレット管理とフロントエンド秘匿化方針
+- [要件定義書](docs/設計書/Current/要件定義書.md): システムの全体目的、機能要件、非機能要件
+- [技術要件定義書](docs/設計書/Current/技術要件定義書.md): 技術スタック、外部連携仕様、セキュリティ方針
+- [画面仕様書](docs/設計書/Current/画面仕様書.md): 各画面のレイアウト、コンポーネント構成、インタラクション
+- [バックエンドAPI仕様書](docs/設計書/Current/バックエンドAPI仕様書.md): RESTful API エンドポイント、リクエスト/レスポンス仕様
+- [テーブルスキーマ定義書](docs/設計書/Current/テーブルスキーマ定義書.md): SQLite テーブル定義、リレーション、インデックス
+- [ビジネスロジック仕様書](docs/設計書/Current/ビジネスロジック仕様書.md): 滞在検知アルゴリズム、定番ルート類似度判定ロジック
+- [本番適用作業手順書](docs/設計書/Current/本番適用作業手順書.md): Google Cloud Run / IAP / Secret Manager 本番デプロイ手順
 
 ---
 
 ## 🔒 ライセンス・運用ルール
 
 - 本システムは個人用途向けのプライベートプロジェクトです。
-- システムの改訂および保守運用については、[rules/システム改訂ルール.md](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/rules/システム改訂ルール.md) および [AGENTS.md](file:///Users/sakyo/Documents/workspace/AI/bicycle-log/AGENTS.md) に規定された改訂ターン管理プロトコルに準拠します。
+- システムの改訂および保守運用については、AI駆動システム開発プロセス標準規約 (System Dev Pipeline Rule V2.6) に規定された改訂ライフサイクル（Single Writer 台帳管理・Shift-Left Hard Gate）に準拠します。

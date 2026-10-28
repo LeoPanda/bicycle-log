@@ -1,9 +1,12 @@
 import math
 import logging
-from typing import List, Tuple, Dict, Set, Optional
+from typing import List, Tuple, Dict, Set, Optional, Any
+from datetime import datetime
+from fastapi import HTTPException, status
 from sqlmodel import Session, select
 from app.models.activity import Activity
 from app.models.route import Route
+from app.schemas.route import RouteUpdate
 
 logger = logging.getLogger("app.services.route")
 
@@ -297,3 +300,86 @@ def detect_and_group_routes(session: Session) -> Dict[str, int]:
         "detected_routes": created_route_count,
         "grouped_activities": grouped_activity_count
     }
+
+
+def list_routes_data(session: Session) -> List[Dict[str, Any]]:
+    routes = session.exec(select(Route).order_by(Route.id.asc())).all()
+    result = []
+    for r in routes:
+        linked_activities = session.exec(
+            select(Activity).where(Activity.route_id == r.id).order_by(Activity.start_date.desc())
+        ).all()
+        result.append({
+            "id": r.id,
+            "name": r.name,
+            "summary_polyline": r.summary_polyline,
+            "activity_count": len(linked_activities),
+            "created_at": r.created_at,
+            "updated_at": r.updated_at
+        })
+    return result
+
+
+def get_route_detail_data(session: Session, route_id: int) -> Dict[str, Any]:
+    route = session.get(Route, route_id)
+    if not route:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Route not found")
+    
+    linked_activities = session.exec(
+        select(Activity).where(Activity.route_id == route_id).order_by(Activity.start_date.desc())
+    ).all()
+
+    activities_list = []
+    for a in linked_activities:
+        activities_list.append({
+            "id": a.id,
+            "name": a.name,
+            "start_date": a.start_date,
+            "distance_km": round(a.distance / 1000.0, 2) if a.distance else 0.0,
+            "moving_time": a.moving_time,
+            "total_elevation_gain": a.total_elevation_gain,
+            "summary_polyline": a.summary_polyline,
+            "strava_url": f"https://www.strava.com/activities/{a.id}"
+        })
+
+    return {
+        "id": route.id,
+        "name": route.name,
+        "summary_polyline": route.summary_polyline,
+        "activity_count": len(linked_activities),
+        "activities": activities_list,
+        "created_at": route.created_at,
+        "updated_at": route.updated_at
+    }
+
+
+def update_route_data(session: Session, route_id: int, route_update: RouteUpdate) -> Route:
+    route = session.get(Route, route_id)
+    if not route:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Route not found")
+
+    if route_update.name is not None:
+        route.name = route_update.name
+    if route_update.summary_polyline is not None:
+        route.summary_polyline = route_update.summary_polyline
+
+    route.updated_at = datetime.now()
+    session.add(route)
+    session.commit()
+    session.refresh(route)
+    return route
+
+
+def delete_route_data(session: Session, route_id: int) -> None:
+    route = session.get(Route, route_id)
+    if not route:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Route not found")
+
+    linked_activities = session.exec(select(Activity).where(Activity.route_id == route_id)).all()
+    for a in linked_activities:
+        a.route_id = None
+        session.add(a)
+
+    session.delete(route)
+    session.commit()
+

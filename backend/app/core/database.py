@@ -1,6 +1,12 @@
 import os
-from sqlmodel import SQLModel, create_engine, Session, text
+import logging
+from sqlalchemy import create_engine, event
+from sqlmodel import Session
+from alembic.config import Config
+from alembic import command
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 # Ensure data directory exists
 db_path = settings.DATABASE_URL.replace("sqlite:///", "")
@@ -8,59 +14,36 @@ db_dir = os.path.dirname(db_path)
 if db_dir and not os.path.exists(db_dir):
     os.makedirs(db_dir, exist_ok=True)
 
-connect_args = {"check_same_thread": False}
+connect_args = {
+    "check_same_thread": False,
+    "timeout": 5.0,
+}
 engine = create_engine(settings.DATABASE_URL, echo=settings.SQL_ECHO, connect_args=connect_args)
 
+@event.listens_for(engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON;")
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL;")
+    cursor.execute("PRAGMA busy_timeout=5000;")
+    cursor.close()
+
 def init_db():
-    # Enable PRAGMAs for SQLite
-    with engine.connect() as conn:
-        conn.execute(text("PRAGMA foreign_keys=ON;"))
-        conn.execute(text("PRAGMA journal_mode=WAL;"))
-        conn.commit()
-
-    # Import models so SQLModel metadata is populated
-    import app.models  # noqa
-
-    SQLModel.metadata.create_all(engine)
-
-    # Create view place_visit_summaries and indexes
-    with engine.connect() as conn:
-        conn.execute(text("""
-            CREATE VIEW IF NOT EXISTS place_visit_summaries AS
-            SELECT 
-                p.id AS place_id,
-                p.name AS place_name,
-                p.category_id,
-                c.name AS category_name,
-                p.address,
-                p.latitude,
-                p.longitude,
-                COUNT(s.id) AS visit_count,
-                SUM(s.stay_duration_seconds) AS total_stay_seconds,
-                MAX(s.arrived_at) AS last_visited_at
-            FROM places p
-            LEFT JOIN place_categories c ON p.category_id = c.id
-            JOIN stay_logs s ON p.id = s.place_id
-            GROUP BY p.id;
-        """))
-        
-        # Indexes
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_activities_bike_id ON activities(bike_id);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_activities_start_date ON activities(start_date);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_places_category_id ON places(category_id);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_places_lat_lng ON places(latitude, longitude);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_logs_activity_id ON stay_logs(activity_id);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_logs_place_id ON stay_logs(place_id);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_logs_arrived_at ON stay_logs(arrived_at);"))
-        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_stay_log_images_stay_log_id ON stay_log_images(stay_log_id);"))
-        
-        # Add route_id column to activities if not exists
-        try:
-            conn.execute(text("ALTER TABLE activities ADD COLUMN route_id INTEGER REFERENCES routes(id);"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_activities_route_id ON activities(route_id);"))
-        except Exception:
-            pass  # Column likely already exists
-        conn.commit()
+    """Run Alembic migrations to upgrade database to head."""
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        backend_dir = os.path.abspath(os.path.join(current_dir, "..", ".."))
+        alembic_ini_path = os.path.join(backend_dir, "alembic.ini")
+        if os.path.exists(alembic_ini_path):
+            alembic_cfg = Config(alembic_ini_path)
+            # Ensure alembic script_location is resolved correctly
+            alembic_cfg.set_main_option("script_location", os.path.join(backend_dir, "alembic"))
+            command.upgrade(alembic_cfg, "head")
+            logger.info("Alembic database migrations applied successfully.")
+    except Exception as e:
+        logger.error(f"Error during database migration: {e}")
+        raise
 
 def get_session():
     with Session(engine) as session:

@@ -1,0 +1,323 @@
+{
+  "schema_version": "2.6.0",
+  "project_metadata": {
+    "project_name": "bicycle-log",
+    "app_version": "2.0.0",
+    "deployment_profile": "Profile A: クラウド公開 (Cloud-Native Web Service)",
+    "mock_mode": "ENABLED",
+    "execution_mode": "GLOBAL_PLUGIN",
+    "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
+    "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
+    "current_branch": "feature",
+    "updated_at": "2026-10-28T09:52:47.563104+09:00",
+    "updated_by": "conductor",
+    "md_checksum": "sha256:153b0ba1131acf9d57ab7594b63a948a81bb396a94d0398715b8cd20bc59f34e"
+  },
+  "current_status": "PRODUCTION_ACTIVE",
+  "phases": {
+    "PHASE_1": {
+      "status": "COMPLETED",
+      "title": "プロジェクトの準備",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-20T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P1-T01",
+          "title": "ディレクトリ・環境設定展開 (dev-phase1-setup)",
+          "done": true
+        },
+        {
+          "id": "P1-T02",
+          "title": "Central Knowledge Hub 初期化 & 未処理原票確認",
+          "done": true
+        },
+        {
+          "id": "P1-T03",
+          "title": "静的スケルトン基盤展開",
+          "done": true
+        },
+        {
+          "id": "P1-T04",
+          "title": "環境変数初期化 (.env)",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_2": {
+      "status": "COMPLETED",
+      "title": "要件定義",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-22T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P2-T01",
+          "title": "要件定義書作成・精査 (REQ-ID付与)",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_3": {
+      "status": "COMPLETED",
+      "title": "基本設計書の作成と整合性チェック",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-10-28T09:03:38.934023+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P3-T01",
+          "title": "4大基本設計書作成",
+          "done": true
+        },
+        {
+          "id": "P3-T02",
+          "title": "基本設計レビュー (dev-review-arch) PASS",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_4": {
+      "status": "COMPLETED",
+      "title": "開発環境とシステム構築",
+      "tasks": [
+        {
+          "id": "P4-T01",
+          "title": "Docker/環境構築 & BE/FE実装",
+          "done": true
+        },
+        {
+          "id": "P4-T02",
+          "title": "Git初期化 (dev-git-init)",
+          "done": true
+        },
+        {
+          "id": "P4-T03",
+          "title": "Hard Gate (harness_guard.py) & CI検証 PASS",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_5": {
+      "status": "COMPLETED",
+      "title": "ウォークスルー動作確認とデバッグ",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-25T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P5-T01",
+          "title": "ブラウザ感覚センサー検証 (Chrome DevTools MCP)",
+          "done": true
+        },
+        {
+          "id": "P5-T02",
+          "title": "モック切替検証 & API仕様書同期",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_5_5": {
+      "status": "COMPLETED",
+      "title": "コード品質・整合性レビュー",
+      "tasks": [
+        {
+          "id": "P55-T01",
+          "title": "dev-review-code (CLEAN判定)",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_6": {
+      "status": "COMPLETED",
+      "title": "スルーテスト環境の構築と実施",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-26T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P6-T01",
+          "title": "シナリオテスト & RTM検証 (traceability_checker.py)",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_7": {
+      "status": "COMPLETED",
+      "title": "本番リリース",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-27T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P7-T01",
+          "title": "dev-review-system (RELEASE APPROVED)",
+          "done": true
+        },
+        {
+          "id": "P7-T02",
+          "title": "本番デプロイ & セキュリティ検証",
+          "done": true
+        }
+      ]
+    },
+    "PHASE_8": {
+      "status": "COMPLETED",
+      "title": "知見自己進化・メトリクス集計",
+      "approval_gate": {
+        "required": true,
+        "approved": true,
+        "approved_at": "2026-09-27T00:00:00+09:00",
+        "approver": "user"
+      },
+      "tasks": [
+        {
+          "id": "P8-T01",
+          "title": "メトリクス集計 & 知見原票投函 (CLAIM-*)",
+          "done": true
+        },
+        {
+          "id": "P8-T02",
+          "title": "本番リリース (dev-git-release)",
+          "done": true
+        }
+      ]
+    }
+  },
+  "review_gates": {
+    "arch_review": {
+      "verdict": "PASS",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "report_path": "docs/reports/基本設計レビュー結果報告書_v2.0.0.md",
+      "updated_at": "2026-10-28T08:58:23.333152+09:00"
+    },
+    "code_review": {
+      "verdict": "CLEAN",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "report_path": "docs/reports/コード品質レビュー及びリファクタリング提案書_v2.0.0.md",
+      "updated_at": "2026-10-28T09:44:26.175718+09:00"
+    },
+    "system_review": {
+      "verdict": "RELEASE APPROVED",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "report_path": "docs/reports/システム総合レビュー結果報告書_v2.0.0.md",
+      "updated_at": "2026-10-28T09:51:19.244972+09:00"
+    }
+  },
+  "metrics_summary": {
+    "total_score": 68.9,
+    "grade": "C (改善推奨 / Needs Improvement)",
+    "category_scores": {
+      "リソース効率": {
+        "score": 64.1,
+        "weighted_score": 16.02,
+        "weight": 25.0
+      },
+      "品質・堅牢性": {
+        "score": 99.7,
+        "weighted_score": 34.9,
+        "weight": 35.0
+      },
+      "ナレッジ進化": {
+        "score": 0.0,
+        "weighted_score": 0.0,
+        "weight": 15.0
+      },
+      "ガバナンス": {
+        "score": 72.0,
+        "weighted_score": 18.0,
+        "weight": 25.0
+      }
+    },
+    "total_tokens": null,
+    "total_tool_calls": null,
+    "net_loc": null,
+    "last_collected_at": "2026-10-28T09:52:18.610843+09:00"
+  },
+  "revisions": {
+    "current_revision_status": "IDLE",
+    "active_revision_id": null,
+    "current_turn": 1,
+    "history": [
+      {
+        "id": "1.1.001",
+        "version": "v1.1",
+        "turn": 1,
+        "status": "完了",
+        "author": "conductor",
+        "title": "走行ログ削除機能、DB/GCS整合性確保、ダイアログUI",
+        "completed_at": "2026-09-27"
+      },
+      {
+        "id": "1.2.001",
+        "version": "v1.2",
+        "turn": 1,
+        "status": "完了",
+        "author": "conductor",
+        "title": "発着点滞在スポット追加、バージョン表記、検索窓、ヒートマップ拡張",
+        "completed_at": "2026-09-30"
+      },
+      {
+        "id": "1.2.002",
+        "version": "v1.2",
+        "turn": 1,
+        "status": "完了",
+        "author": "conductor",
+        "title": "Cloud Run本番デプロイ（既存DB維持）",
+        "completed_at": "2026-10-03"
+      },
+      {
+        "id": "2.0.001",
+        "title": "機能改訂",
+        "status": "COMPLETED",
+        "started_at": "2026-10-28T09:52:18.612362+09:00",
+        "completed_at": "2026-10-28T09:52:43.667871+09:00",
+        "branch": "feature"
+      }
+    ]
+  },
+  "open_questions": [],
+  "decisions": [
+    {
+      "date": "2026-10-11",
+      "summary": "V2.1パイプライン（WikiSkill永続ナレッジ、3大レビューゲート、PROJECT_STATE状態管理機構）への環境アップグレード完了"
+    },
+    {
+      "date": "2026-10-28",
+      "summary": "v2.0.0全面改訂基本計画策定およびSTAGE 1〜3自律推進の開始"
+    }
+  ],
+  "infrastructure": {
+    "git_commit": "6e13cc8",
+    "remote_url": "origin",
+    "container_status": "Up",
+    "production_url": "Google Cloud Run (IAP認証保護)"
+  }
+}

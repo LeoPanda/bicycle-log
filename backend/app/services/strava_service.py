@@ -1,4 +1,3 @@
-import time
 import logging
 import httpx
 from datetime import datetime, timedelta, timezone
@@ -14,7 +13,18 @@ from app.models.stay_log import StayLog
 from app.models.route import Route
 from app.services.stop_detection import detect_stops
 from app.services.places_service import get_or_create_place_for_stop
-from app.services.route_service import calculate_polyline_similarity, decode_polyline
+from app.services.route_service import calculate_polyline_similarity
+from app.services.strava_client import (
+    get_strava_access_token,
+    fetch_athlete_activities,
+    fetch_strava_streams,
+    fetch_strava_gear,
+    fetch_strava_activity_detail
+)
+from app.services.strava_parser import (
+    process_activity_endpoints,
+    backfill_activity_endpoints
+)
 
 logger = logging.getLogger("app.services.strava")
 
@@ -27,19 +37,12 @@ def sync_strava_activities(
     all_time: bool = False,
     before_timestamp: Optional[int] = None
 ) -> Dict[str, Any]:
-    """
-    Syncs real Strava activities directly from the Strava API v3 using credentials in .env.
-    Fetches real athlete activities and real GPS streams for stop detection & Google Places generation.
-    Does NOT use mock data or artificial fallbacks.
-    """
-    # 1. Credentials Check
     if not has_strava_credentials():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Strava API credentials (STRAVA_CLIENT_ID, STRAVA_CLIENT_SECRET, STRAVA_REFRESH_TOKEN) are missing in .env"
         )
 
-    # 2. Calculate time range
     latest_activity = session.exec(
         select(Activity).order_by(Activity.start_date.desc())
     ).first()
@@ -56,62 +59,17 @@ def sync_strava_activities(
         if start_dt.tzinfo is None:
             jst = timezone(timedelta(hours=9))
             start_dt = start_dt.replace(tzinfo=jst)
-        # Add +1 second to exclude latest activity itself
         after_timestamp = int(start_dt.timestamp()) + 1
 
     bikes = session.exec(select(Bike)).all()
     default_bike = bikes[0] if bikes else None
 
     try:
-        # OAuth Token Exchange
-        token_url = "https://www.strava.com/oauth/token"
-        token_params = {
-            "client_id": settings.STRAVA_CLIENT_ID,
-            "client_secret": settings.STRAVA_CLIENT_SECRET,
-            "refresh_token": settings.STRAVA_REFRESH_TOKEN,
-            "grant_type": "refresh_token"
-        }
         with httpx.Client(timeout=30.0) as client:
-            t_res = client.post(token_url, data=token_params)
-            if t_res.status_code != 200:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Strava OAuth Token Exchange failed: {t_res.status_code} - {t_res.text}"
-                )
-            access_token = t_res.json()["access_token"]
-
-            # Fetch Athlete Activities with Pagination
-            acts_url = "https://www.strava.com/api/v3/athlete/activities"
-            headers = {"Authorization": f"Bearer {access_token}"}
-            
-            real_activities = []
-            page = 1
-            per_page = 100
-
-            while True:
-                params = {"per_page": per_page, "page": page}
-                if after_timestamp > 0:
-                    params["after"] = after_timestamp
-                if before_timestamp and before_timestamp > 0:
-                    params["before"] = before_timestamp
-
-                a_res = client.get(acts_url, headers=headers, params=params)
-                if a_res.status_code != 200:
-                    err_detail = a_res.json().get("message", a_res.text) if a_res.headers.get("content-type", "").startswith("application/json") else a_res.text
-                    raise HTTPException(
-                        status_code=a_res.status_code,
-                        detail=f"Strava Activities API error ({a_res.status_code}): {err_detail}. Note: Ensure your STRAVA_REFRESH_TOKEN in .env has 'activity:read_all' or 'activity:read' scope."
-                    )
-
-                page_activities = a_res.json()
-                if not isinstance(page_activities, list) or len(page_activities) == 0:
-                    break
-
-                real_activities.extend(page_activities)
-
-                if len(page_activities) < per_page:
-                    break
-                page += 1
+            access_token = get_strava_access_token(client)
+            real_activities = fetch_athlete_activities(
+                client, access_token, after_timestamp=after_timestamp, before_timestamp=before_timestamp
+            )
 
             initial_places_count = len(session.exec(select(Place)).all())
             synced_activities = 0
@@ -119,8 +77,6 @@ def sync_strava_activities(
 
             for act_data in real_activities:
                 act_id = act_data["id"]
-
-                # 1. スポーツ種別を Ride のみに限定
                 act_type = act_data.get("sport_type") or act_data.get("type")
                 if act_type != "Ride":
                     continue
@@ -132,7 +88,6 @@ def sync_strava_activities(
                 start_date_raw = act_data.get("start_date_local") or act_data.get("start_date")
                 start_date = datetime.fromisoformat(start_date_raw.replace("Z", "+09:00"))
 
-                # ギアID (gear_id) に基づく Bike の判定・自動登録
                 gear_id = act_data.get("gear_id")
                 assigned_bike_id = None
 
@@ -149,7 +104,7 @@ def sync_strava_activities(
                     if matched_bike:
                         assigned_bike_id = matched_bike.id
                     else:
-                        gear_info = _fetch_strava_gear(client, access_token, gear_id)
+                        gear_info = fetch_strava_gear(client, access_token, gear_id)
                         bike_name = gear_info.get("name") if gear_info and gear_info.get("name") else f"Strava Bike ({gear_id})"
                         brand = gear_info.get("brand_name") if gear_info else None
                         model = gear_info.get("model_name") if gear_info else None
@@ -172,7 +127,7 @@ def sync_strava_activities(
                 if assigned_bike_id is None and default_bike:
                     assigned_bike_id = default_bike.id
 
-                detail_data = _fetch_strava_activity_detail(client, access_token, act_id)
+                detail_data = fetch_strava_activity_detail(client, access_token, act_id)
                 calories = None
                 if detail_data:
                     calories = detail_data.get("calories")
@@ -185,7 +140,7 @@ def sync_strava_activities(
                 matched_route_id: Optional[int] = None
 
                 if summary_poly:
-                    routes = session.exec(select(Route).where(Route.summary_polyline != None)).all()  # noqa
+                    routes = session.exec(select(Route).where(Route.summary_polyline != None)).all()  # noqa: E711
                     best_sim = 0.0
                     act_name_str = act_data.get("name", "Strava Ride")
                     for r in routes:
@@ -217,8 +172,7 @@ def sync_strava_activities(
                 session.refresh(activity)
                 synced_activities += 1
 
-                # Fetch real streams for stop detection
-                streams = _fetch_strava_streams(client, access_token, act_id)
+                streams = fetch_strava_streams(client, access_token, act_id)
                 latlng_stream = streams.get("latlng", {}).get("data", [])
                 time_stream = streams.get("time", {}).get("data", [])
                 
@@ -240,7 +194,6 @@ def sync_strava_activities(
                         detected_stops_count += 1
                     session.commit()
 
-                # Process start and end points as StayLog
                 endpoint_count = process_activity_endpoints(session, activity)
                 detected_stops_count += endpoint_count
 
@@ -262,156 +215,3 @@ def sync_strava_activities(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to sync real Strava API: {str(e)}"
         )
-
-def _fetch_strava_streams(client: httpx.Client, access_token: str, activity_id: int) -> Dict[str, Any]:
-    """Fetches real GPS latlng and time streams for an activity from Strava API."""
-    url = f"https://www.strava.com/api/v3/activities/{activity_id}/streams"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    params = {
-        "keys": "latlng,time,moving",
-        "key_by_type": "true"
-    }
-    try:
-        res = client.get(url, headers=headers, params=params)
-        if res.status_code == 200:
-            data = res.json()
-            if isinstance(data, dict):
-                return data
-            elif isinstance(data, list):
-                result = {}
-                for item in data:
-                    if isinstance(item, dict) and "type" in item:
-                        result[item["type"]] = item
-                return result
-    except Exception as e:
-        logger.warning(f"Failed to fetch Strava streams for activity {activity_id}: {e}")
-    return {}
-
-def _fetch_strava_gear(client: httpx.Client, access_token: str, gear_id: str) -> Optional[Dict[str, Any]]:
-    """Fetches real gear details from Strava API by gear_id."""
-    url = f"https://www.strava.com/api/v3/gear/{gear_id}"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    try:
-        res = client.get(url, headers=headers)
-        if res.status_code == 200:
-            return res.json()
-        logger.warning(f"Strava Gear API returned status {res.status_code} for gear_id {gear_id}: {res.text}")
-    except Exception as e:
-        logger.warning(f"Failed to fetch Strava gear {gear_id}: {e}")
-    return None
-
-def _fetch_strava_activity_detail(client: httpx.Client, access_token: str, activity_id: int) -> Optional[Dict[str, Any]]:
-    """Fetches detailed activity information including calories from Strava API."""
-    url = f"https://www.strava.com/api/v3/activities/{activity_id}"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    try:
-        res = client.get(url, headers=headers)
-        if res.status_code == 200:
-            return res.json()
-        logger.warning(f"Strava Activity Detail API returned status {res.status_code} for activity {activity_id}: {res.text}")
-    except Exception as e:
-        logger.warning(f"Failed to fetch Strava activity detail for {activity_id}: {e}")
-    return None
-
-def process_activity_endpoints(
-    session: Session,
-    activity: Activity,
-    force_update: bool = False
-) -> int:
-    """
-    Detects start and end points from activity.summary_polyline,
-    fetches or creates Places via Google Places API / Double Caching,
-    and registers 2 StayLog records (Start: 0s, Goal: 0s).
-    Returns count of new StayLog records created (0, 1, or 2).
-    """
-    if not activity.summary_polyline:
-        return 0
-
-    coords = decode_polyline(activity.summary_polyline)
-    if len(coords) < 2:
-        return 0
-
-    start_lat, start_lng = coords[0]
-    end_lat, end_lng = coords[-1]
-
-    # Check existing endpoint stay_logs
-    existing_logs = session.exec(
-        select(StayLog).where(StayLog.activity_id == activity.id)
-    ).all()
-
-    has_start = any("(スタート地点)" in (log.notes or "") for log in existing_logs)
-    has_end = any("(ゴール地点)" in (log.notes or "") for log in existing_logs)
-
-    created_count = 0
-
-    # 1. Start Point (StayLog)
-    if not has_start or force_update:
-        place_start = get_or_create_place_for_stop(session, start_lat, start_lng)
-        start_time = activity.start_date
-        stay_start = StayLog(
-            activity_id=activity.id,
-            place_id=place_start.id,
-            arrived_at=start_time,
-            left_at=start_time,
-            stay_duration_seconds=0,
-            stay_latitude=start_lat,
-            stay_longitude=start_lng,
-            notes=f"{place_start.name} (スタート地点)"
-        )
-        session.add(stay_start)
-        created_count += 1
-
-    # 2. End Point (StayLog)
-    if not has_end or force_update:
-        place_end = get_or_create_place_for_stop(session, end_lat, end_lng)
-        elapsed = activity.elapsed_time if activity.elapsed_time else (activity.moving_time or 0)
-        end_time = activity.start_date + timedelta(seconds=elapsed)
-        stay_end = StayLog(
-            activity_id=activity.id,
-            place_id=place_end.id,
-            arrived_at=end_time,
-            left_at=end_time,
-            stay_duration_seconds=0,
-            stay_latitude=end_lat,
-            stay_longitude=end_lng,
-            notes=f"{place_end.name} (ゴール地点)"
-        )
-        session.add(stay_end)
-        created_count += 1
-
-    if created_count > 0:
-        session.commit()
-
-    return created_count
-
-def backfill_activity_endpoints(
-    session: Session,
-    all_activities: bool = True,
-    limit_months: Optional[int] = None
-) -> Dict[str, Any]:
-    """
-    Backfills start and end stay logs for existing activities.
-    """
-    query = select(Activity)
-    if not all_activities and limit_months:
-        jst = timezone(timedelta(hours=9))
-        cutoff = datetime.now(jst) - timedelta(days=30 * limit_months)
-        query = query.where(Activity.start_date >= cutoff)
-
-    activities = session.exec(query.order_by(Activity.start_date.desc())).all()
-    total_processed = 0
-    total_endpoints_created = 0
-
-    for act in activities:
-        created = process_activity_endpoints(session, act)
-        if created > 0:
-            total_endpoints_created += created
-        total_processed += 1
-
-    return {
-        "status": "success",
-        "processed_activities": total_processed,
-        "created_endpoint_logs": total_endpoints_created
-    }
-
-

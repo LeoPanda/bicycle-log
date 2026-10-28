@@ -11,8 +11,8 @@ logger = logging.getLogger("app.services.image")
 try:
     import pillow_heif
     pillow_heif.register_heif_opener()
-except ImportError:
-    pass
+except ImportError as e:
+    logger.debug(f"pillow_heif not available, HEIC support disabled: {e}")
 
 UPLOAD_DIR = os.path.join(os.path.dirname(settings.DATABASE_URL.replace("sqlite:///", "")), "uploads")
 
@@ -33,8 +33,8 @@ def optimize_and_save_image(file_obj_or_bytes: Union[BinaryIO, bytes], filename:
         if hasattr(file_stream, "seek"):
             try:
                 file_stream.seek(0)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Stream seek failed: {e}")
 
     # Open image with Pillow
     try:
@@ -47,8 +47,8 @@ def optimize_and_save_image(file_obj_or_bytes: Union[BinaryIO, bytes], filename:
     try:
         from PIL import ImageOps
         img = ImageOps.exif_transpose(img)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"exif_transpose skipped: {e}")
 
     # 1. Center crop to square
     width, height = img.size

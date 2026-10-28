@@ -101,5 +101,48 @@ def reset_and_seed_db():
         
     engine.dispose()
 
+def verify_db_counts():
+    import sqlite3
+    baseline_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backup", "v2.0.0_snapshots", "record_counts_baseline.txt")
+    if not os.path.exists(baseline_file):
+        print(f"Error: baseline file {baseline_file} not found.")
+        sys.exit(1)
+        
+    expected_counts = {}
+    with open(baseline_file, "r") as f:
+        for line in f:
+            line = line.strip()
+            if line and "|" in line:
+                t, c = line.split("|")
+                expected_counts[t] = int(c)
+                
+    db_path = settings.DATABASE_URL.replace("sqlite:///", "")
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    all_match = True
+    print(f"--- Verifying DB Record Counts against Baseline ---")
+    for table, exp in expected_counts.items():
+        try:
+            cur.execute(f"SELECT COUNT(*) FROM {table}")
+            actual = cur.fetchone()[0]
+            status = "MATCH" if actual == exp else "MISMATCH"
+            if actual != exp:
+                all_match = False
+            print(f"  [{status}] {table}: actual={actual}, expected={exp}")
+        except Exception as e:
+            print(f"  [ERROR] {table}: {e}")
+            all_match = False
+    con.close()
+    
+    if all_match:
+        print("✅ [PASS] All table record counts match baseline perfectly.")
+        return 0
+    else:
+        print("❌ [FAIL] Record count mismatch detected!")
+        sys.exit(1)
+
 if __name__ == "__main__":
-    reset_and_seed_db()
+    if "--verify-only" in sys.argv:
+        verify_db_counts()
+    else:
+        reset_and_seed_db()
