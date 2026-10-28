@@ -9,9 +9,9 @@
     "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
     "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
     "current_branch": "feature",
-    "updated_at": "2026-10-28T14:30:09.389885+09:00",
+    "updated_at": "2026-10-28T14:50:26.279725+09:00",
     "updated_by": "conductor",
-    "md_checksum": "sha256:9c582098a0bfa6e3247e58f697839b90499590eda2c68c58c1004e583f210d11"
+    "md_checksum": "sha256:db136e7e5d79207e0721a452dd645eb11b0793b3add95a418c390e48436c9c16"
   },
   "current_status": "PRODUCTION_ACTIVE",
   "phases": {
@@ -344,7 +344,7 @@
     }
   ],
   "infrastructure": {
-    "git_commit": "8bcbe76",
+    "git_commit": "cb441b2",
     "remote_url": "origin",
     "container_status": "Up",
     "production_url": "Google Cloud Run (IAP認証保護)"
