@@ -11,7 +11,7 @@
 - **TEMPLATE_SOURCE**: ~/.gemini/config/plugins/system-dev-pipeline
 - **Knowledge Hub 連携状態**: SYNCED (Immutable Core v2.6.0 + Local Overlay)
 - **現在の作業ブランチ**: feature
-- **最終更新日時**: 2026-10-28T13:41:42.968984+09:00
+- **最終更新日時**: 2026-10-28T14:30:09.389885+09:00
 - **最終更新者**: 👑 プロジェクトコンダクター (conductor)
 
 ---
@@ -87,3 +87,4 @@
 ## 4. 未決事項 (Open Questions) & 決定事項 (Decisions)
 - 💡 [2026-10-11] V2.1パイプライン（WikiSkill永続ナレッジ、3大レビューゲート、PROJECT_STATE状態管理機構）への環境アップグレード完了
 - 💡 [2026-10-28] 改訂計画（Stage 1〜7）完了: 走行ヒートマップ改善、可視化画面刷新（横棒プログレスバー化）、定番ルート検出高速化、品質テスト・設計書同期、目視レビュー承認、および v2.1.0 本番リリース完了
+- 💡 [2026-10-28] v2.1.0 Cloud Run 本番環境リリース完了 (Alembic baseline自動スタンプ & Litestream 正常同期確認) および Knowledge Hub への PAT-SYS-009 投函完了

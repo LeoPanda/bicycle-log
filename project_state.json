@@ -9,9 +9,9 @@
     "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
     "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
     "current_branch": "feature",
-    "updated_at": "2026-10-28T13:41:42.968984+09:00",
+    "updated_at": "2026-10-28T14:30:09.389885+09:00",
     "updated_by": "conductor",
-    "md_checksum": "sha256:0ed7e0e03bd19d56e6a6e44f1fc9ce32a2336b6fb5ff36a7ec90822d9ee3fb7c"
+    "md_checksum": "sha256:9c582098a0bfa6e3247e58f697839b90499590eda2c68c58c1004e583f210d11"
   },
   "current_status": "PRODUCTION_ACTIVE",
   "phases": {
@@ -337,10 +337,14 @@
     {
       "date": "2026-10-28",
       "summary": "改訂計画（Stage 1〜7）完了: 走行ヒートマップ改善、可視化画面刷新（横棒プログレスバー化）、定番ルート検出高速化、品質テスト・設計書同期、目視レビュー承認、および v2.1.0 本番リリース完了"
+    },
+    {
+      "date": "2026-10-28",
+      "summary": "v2.1.0 Cloud Run 本番環境リリース完了 (Alembic baseline自動スタンプ & Litestream 正常同期確認) および Knowledge Hub への PAT-SYS-009 投函完了"
     }
   ],
   "infrastructure": {
-    "git_commit": "6e13cc8",
+    "git_commit": "8bcbe76",
     "remote_url": "origin",
     "container_status": "Up",
     "production_url": "Google Cloud Run (IAP認証保護)"
