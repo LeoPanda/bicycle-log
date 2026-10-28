@@ -9,9 +9,9 @@
     "template_source": "~/.gemini/config/plugins/system-dev-pipeline",
     "knowledge_hub_status": "SYNCED (Immutable Core v2.6.0 + Local Overlay)",
     "current_branch": "feature",
-    "updated_at": "2026-10-28T13:08:03.073563+09:00",
+    "updated_at": "2026-10-28T13:12:57.125472+09:00",
     "updated_by": "conductor",
-    "md_checksum": "sha256:98f679c3e16b41ee769f526816c173d0cc4eeee41f94053da98d8ae6d91e7360"
+    "md_checksum": "sha256:618acc4ef9a72adbd073332a8c116c999e8c314aab7e7b71119b79af84f7118e"
   },
   "current_status": "PRODUCTION_ACTIVE",
   "phases": {
@@ -335,7 +335,7 @@
     },
     {
       "date": "2026-10-28",
-      "summary": "v2.0.0全面改訂基本計画策定およびSTAGE 1〜3自律推進の開始"
+      "summary": "改訂計画（Stage 1〜7）完了: 走行ヒートマップ改善、可視化画面刷新（横棒プログレスバー化）、定番ルート検出高速化、品質テスト・設計書同期、目視レビュー承認、および v2.1.0 本番リリース完了"
     }
   ],
   "infrastructure": {
